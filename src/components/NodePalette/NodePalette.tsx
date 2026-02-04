@@ -278,7 +278,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
             borderBottom: '1px solid #f0f0f0'
           }}>
             <StarFilled style={{ color: '#faad14' }} />
-            <Text strong style={{ fontSize: 13 }}>收藏节点</Text>
+            <Text strong style={{ fontSize: 13 }}>{t('nodePalette.favorites')}</Text>
             <Badge count={favoriteNodes.length} style={{ backgroundColor: '#faad14' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

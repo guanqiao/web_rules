@@ -179,7 +179,7 @@ export const TestPanel: React.FC<TestPanelProps> = ({
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(compiledCode);
-    message.success('代码已复制到剪贴板');
+    message.success(t('messages.copiedToClipboard'));
   };
 
   const getStatusIcon = (status?: string) => {

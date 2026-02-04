@@ -134,7 +134,7 @@ export const RuleEditor: React.FC = () => {
             message.info({
               content: (
                 <div>
-                  <div>建议连接到：</div>
+                  <div>{t('editor.smartConnect.suggestions')}</div>
                   {recommendations.map((rec, idx) => (
                     <div key={idx} style={{ marginLeft: 16, fontSize: 12, color: '#1890ff' }}>
                       • {rec}
@@ -166,38 +166,38 @@ export const RuleEditor: React.FC = () => {
     switch (node.type) {
       case 'start':
         if (!connectedTargets.includes('condition') && !connectedTargets.includes('action')) {
-          recommendations.push('条件节点 - 用于添加判断逻辑');
-          recommendations.push('动作节点 - 用于直接执行操作');
+          recommendations.push(t('nodePalette.nodeTypes.condition') + ' - ' + t('editor.smartConnect.forCondition'));
+          recommendations.push(t('nodePalette.nodeTypes.action') + ' - ' + t('editor.smartConnect.forAction'));
         }
         break;
       case 'condition':
         if (!connectedTargets.includes('action')) {
-          recommendations.push('动作节点 - 条件满足后执行');
+          recommendations.push(t('nodePalette.nodeTypes.action') + ' - ' + t('editor.smartConnect.afterCondition'));
         }
         if (!connectedTargets.includes('condition')) {
-          recommendations.push('条件节点 - 添加更多条件判断');
+          recommendations.push(t('nodePalette.nodeTypes.condition') + ' - ' + t('editor.smartConnect.moreConditions'));
         }
         if (!connectedTargets.includes('decision')) {
-          recommendations.push('决策节点 - 实现复杂分支逻辑');
+          recommendations.push(t('nodePalette.nodeTypes.decision') + ' - ' + t('editor.smartConnect.complexLogic'));
         }
         break;
       case 'action':
         if (!connectedTargets.includes('end') && !connectedTargets.includes('action')) {
-          recommendations.push('结束节点 - 完成规则流程');
-          recommendations.push('动作节点 - 继续执行其他操作');
+          recommendations.push(t('nodePalette.nodeTypes.end') + ' - ' + t('editor.smartConnect.finishFlow'));
+          recommendations.push(t('nodePalette.nodeTypes.action') + ' - ' + t('editor.smartConnect.continueActions'));
         }
         break;
       case 'decision':
         if (!connectedTargets.includes('action')) {
-          recommendations.push('动作节点 - 执行分支操作');
+          recommendations.push(t('nodePalette.nodeTypes.action') + ' - ' + t('editor.smartConnect.branchAction'));
         }
         if (!connectedTargets.includes('end')) {
-          recommendations.push('结束节点 - 完成流程');
+          recommendations.push(t('nodePalette.nodeTypes.end') + ' - ' + t('editor.smartConnect.finishFlow'));
         }
         break;
       case 'group':
         if (!connectedTargets.includes('end')) {
-          recommendations.push('结束节点 - 完成分组流程');
+          recommendations.push(t('nodePalette.nodeTypes.end') + ' - ' + t('editor.smartConnect.finishGroupFlow'));
         }
         break;
     }
@@ -512,7 +512,7 @@ export const RuleEditor: React.FC = () => {
     setNodes(newNodes);
     setEdges(newEdges);
     setSaveStatus('unsaved');
-    message.success(`已应用模板：${template.name}`);
+    message.success(t('templates.templateApplied') + '：' + template.name);
   }, [setNodes, setEdges]);
 
   const canCompile = nodes.length > 0;
@@ -586,21 +586,21 @@ export const RuleEditor: React.FC = () => {
             
             <Panel position="top-right">
               <Space direction="vertical" size="small">
-                <Tooltip title="显示网格">
+                <Tooltip title={t('editor.showGrid')}>
                   <Switch
                     checked={showGrid}
                     onChange={setShowGrid}
-                    checkedChildren="网格"
-                    unCheckedChildren="无网格"
+                    checkedChildren={t('editor.gridOn')}
+                    unCheckedChildren={t('editor.gridOff')}
                     size="small"
                   />
                 </Tooltip>
-                <Tooltip title="吸附到网格">
+                <Tooltip title={t('editor.snapToGrid')}>
                   <Switch
                     checked={snapToGrid}
                     onChange={setSnapToGrid}
-                    checkedChildren="吸附"
-                    unCheckedChildren="自由"
+                    checkedChildren={t('editor.snapOn')}
+                    unCheckedChildren={t('editor.snapOff')}
                     size="small"
                   />
                 </Tooltip>

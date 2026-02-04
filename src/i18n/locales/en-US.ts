@@ -35,6 +35,24 @@ export default {
     settings: 'Settings',
     help: 'Help',
     about: 'About'
+    smartConnect: {
+      suggestions: 'Suggestions for connection:',
+      forCondition: 'Used to add judgment logic',
+      forAction: 'Used to execute actions directly',
+      afterCondition: 'Execute after condition is met',
+      moreConditions: 'Add more condition judgments',
+      complexLogic: 'Implement complex branching logic',
+      finishFlow: 'Complete rule flow',
+      continueActions: 'Continue with other actions',
+      branchAction: 'Execute branch action',
+      finishGroupFlow: 'Complete group flow'
+    },
+    showGrid: 'Show Grid',
+    snapToGrid: 'Snap to Grid',
+    gridOn: 'Grid',
+    gridOff: 'No Grid',
+    snapOn: 'Snap',
+    snapOff: 'Free'
   },
   toolbar: {
     title: 'Business Rule Configuration System',
@@ -49,7 +67,7 @@ export default {
     fitView: 'Fit View',
     undo: 'Undo',
     redo: 'Redo',
-    templates: 'Templates',
+    templateLibrary: 'Templates',
     shortcuts: 'Shortcuts',
     help: 'Help',
     language: 'Language',
@@ -183,7 +201,18 @@ export default {
     validation: {
       required: 'This field is required',
       invalidFormat: 'Invalid format',
-      invalidValue: 'Invalid value'
+      invalidValue: 'Invalid value',
+      fieldRequired: 'Field cannot be empty',
+      operatorRequired: 'Operator cannot be empty',
+      valueRequired: 'Value cannot be empty',
+      inOperatorRequired: 'IN operator requires at least two values separated by commas',
+      actionTypeRequired: 'Action type cannot be empty',
+      targetRequired: 'Target cannot be empty',
+      methodRequired: 'Method name must be specified when calling a method',
+      expressionRequired: 'Expression cannot be empty',
+      expressionSyntaxError: 'Expression syntax error',
+      groupNameRequired: 'Group name cannot be empty',
+      salienceRangeError: 'Priority must be between 0-65535'
     }
   },
   preview: {
@@ -436,7 +465,8 @@ export default {
       description1: 'Click the "Download JAR" button, and the system will generate a directly deployable JAR package containing:',
       file1: 'Compiled Drools rule file',
       file2: 'Maven POM configuration file',
-      file3: 'KieModule configuration file'
+      file3: 'KieModule configuration file',
+      deployTip: 'JAR packages can be directly deployed to Drools runtime environments.'
     },
     useTemplates: {
       label: 'Use Templates',

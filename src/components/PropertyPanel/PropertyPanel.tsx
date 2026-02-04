@@ -49,40 +49,40 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
     const errors: Record<string, string> = {};
     
     if (nodeType === 'condition') {
-      if (!config.field) errors.field = '字段不能为空';
-      if (!config.operator) errors.operator = '操作符不能为空';
-      if (config.value === undefined || config.value === '') errors.value = '值不能为空';
+      if (!config.field) errors.field = t('propertyPanel.validation.fieldRequired');
+      if (!config.operator) errors.operator = t('propertyPanel.validation.operatorRequired');
+      if (config.value === undefined || config.value === '') errors.value = t('propertyPanel.validation.valueRequired');
       
       if (config.operator === 'in' || config.operator === 'not in') {
         if (typeof config.value === 'string' && config.value.split(',').length < 2) {
-          errors.value = 'IN操作符需要至少两个值，用逗号分隔';
+          errors.value = t('propertyPanel.validation.inOperatorRequired');
         }
       }
     }
     
     if (nodeType === 'action') {
-      if (!config.type) errors.type = '动作类型不能为空';
-      if (!config.target) errors.target = '目标不能为空';
+      if (!config.type) errors.type = t('propertyPanel.validation.actionTypeRequired');
+      if (!config.target) errors.target = t('propertyPanel.validation.targetRequired');
       if (config.type === 'call' && !config.method) {
-        errors.method = '调用方法时必须指定方法名';
+        errors.method = t('propertyPanel.validation.methodRequired');
       }
     }
     
     if (nodeType === 'decision') {
-      if (!config.expression) errors.expression = '表达式不能为空';
+      if (!config.expression) errors.expression = t('propertyPanel.validation.expressionRequired');
       try {
         if (config.expression) {
           new Function(`return ${config.expression}`);
         }
       } catch (e) {
-        errors.expression = '表达式语法错误';
+        errors.expression = t('propertyPanel.validation.expressionSyntaxError');
       }
     }
     
     if (nodeType === 'group') {
-      if (!config.name) errors.name = '分组名称不能为空';
+      if (!config.name) errors.name = t('propertyPanel.validation.groupNameRequired');
       if (config.salience !== undefined && (config.salience < 0 || config.salience > 65535)) {
-        errors.salience = '优先级必须在0-65535之间';
+        errors.salience = t('propertyPanel.validation.salienceRangeError');
       }
     }
     

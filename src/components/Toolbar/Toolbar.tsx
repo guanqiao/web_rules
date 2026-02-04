@@ -153,12 +153,12 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             />
           </Tooltip>
 
-          <Tooltip title={t('toolbar.templates')}>
-            <Button 
-              icon={<AppstoreOutlined />} 
+          <Tooltip title={t('toolbar.templateLibrary')}>
+            <Button
+              icon={<AppstoreOutlined />}
               onClick={() => setTemplateLibraryVisible(true)}
             >
-              {t('toolbar.templates')}
+              {t('toolbar.templateLibrary')}
             </Button>
           </Tooltip>
 

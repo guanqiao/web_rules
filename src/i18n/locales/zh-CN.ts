@@ -51,7 +51,7 @@ export default {
     fitView: '适应视图',
     undo: '撤销',
     redo: '重做',
-    templates: '模板库',
+    templateLibrary: '模板库',
     shortcuts: '快捷键',
     help: '帮助',
     language: '语言',
@@ -185,7 +185,18 @@ export default {
     validation: {
       required: '此字段为必填项',
       invalidFormat: '格式不正确',
-      invalidValue: '值无效'
+      invalidValue: '值无效',
+      fieldRequired: '字段不能为空',
+      operatorRequired: '操作符不能为空',
+      valueRequired: '值不能为空',
+      inOperatorRequired: 'IN操作符需要至少两个值，用逗号分隔',
+      actionTypeRequired: '动作类型不能为空',
+      targetRequired: '目标不能为空',
+      methodRequired: '调用方法时必须指定方法名',
+      expressionRequired: '表达式不能为空',
+      expressionSyntaxError: '表达式语法错误',
+      groupNameRequired: '分组名称不能为空',
+      salienceRangeError: '优先级必须在0-65535之间'
     }
   },
   preview: {
@@ -239,7 +250,25 @@ export default {
       compileFailed: '编译失败: {{error}}',
       downloadSuccess: '下载成功',
       downloadFailed: '下载失败: {{error}}'
-    }
+    },
+    smartConnect: {
+      suggestions: '建议连接到：',
+      forCondition: '用于添加判断逻辑',
+      forAction: '用于直接执行操作',
+      afterCondition: '条件满足后执行',
+      moreConditions: '添加更多条件判断',
+      complexLogic: '实现复杂分支逻辑',
+      finishFlow: '完成规则流程',
+      continueActions: '继续执行其他操作',
+      branchAction: '执行分支操作',
+      finishGroupFlow: '完成分组流程'
+    },
+    showGrid: '显示网格',
+    snapToGrid: '吸附到网格',
+    gridOn: '网格',
+    gridOff: '无网格',
+    snapOn: '吸附',
+    snapOff: '自由'
   },
   templates: {
     title: '规则模板库',
@@ -438,7 +467,8 @@ export default {
       description1: '点击"下载JAR包"按钮，系统会生成可直接部署的JAR包，包含：',
       file1: '编译后的DRL规则文件',
       file2: 'Maven POM配置文件',
-      file3: 'KieModule配置文件'
+      file3: 'KieModule配置文件',
+      deployTip: 'JAR包可以直接部署到Drools运行环境中使用。'
     },
     useTemplates: {
       label: '使用模板',

@@ -4,8 +4,12 @@ import zhCN from './locales/zh-CN';
 import enUS from './locales/en-US';
 
 const resources = {
-  'zh-CN': zhCN,
-  'en-US': enUS
+  'zh-CN': {
+    translation: zhCN
+  },
+  'en-US': {
+    translation: enUS
+  }
 };
 
 i18n
@@ -19,7 +23,10 @@ i18n
     },
     react: {
       useSuspense: false
-    }
+    },
+    returnObjects: true,
+    returnNull: false,
+    returnEmptyString: false
   });
 
 export default i18n;

@@ -39,34 +39,34 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'welcome',
-          label: '欢迎使用',
+          label: t('help.welcome.label'),
           children: (
             <div>
               <Paragraph>
-                欢迎使用业务规则配置系统！本系统是一个可视化的Drools规则编辑器，帮助您通过拖拽节点的方式创建和管理业务规则。
+                {t('help.welcome.intro1')}
               </Paragraph>
               <Paragraph>
-                系统支持将可视化配置编译为标准的Drools DRL规则文件，并可直接下载为JAR包用于生产环境。
+                {t('help.welcome.intro2')}
               </Paragraph>
             </div>
           )
         },
         {
           key: 'interface',
-          label: '界面介绍',
+          label: t('help.interface.label'),
           children: (
             <div>
               <Paragraph>
-                <Text strong>左侧节点库：</Text>包含所有可用的节点类型，可拖拽到画布上
+                <Text strong>{t('help.interface.leftPalette')}</Text>
               </Paragraph>
               <Paragraph>
-                <Text strong>中间画布：</Text>主要工作区域，用于创建和连接节点
+                <Text strong>{t('help.interface.centerCanvas')}</Text>
               </Paragraph>
               <Paragraph>
-                <Text strong>右侧属性面板：</Text>用于编辑选中节点的配置属性
+                <Text strong>{t('help.interface.rightPanel')}</Text>
               </Paragraph>
               <Paragraph>
-                <Text strong>顶部工具栏：</Text>包含预览、编译、下载、保存等操作按钮
+                <Text strong>{t('help.interface.topToolbar')}</Text>
               </Paragraph>
             </div>
           )
@@ -84,33 +84,33 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'node-types',
-          label: '节点类型',
+          label: t('help.nodeTypes.label'),
           children: (
             <div>
               <Paragraph>
-                系统提供以下6种节点类型：
+                {t('help.nodeTypes.description')}
               </Paragraph>
               <ul style={{ paddingLeft: 20 }}>
-                <li><Text strong>开始节点（圆形）</Text>：规则流程的起始点，每个规则必须有且只能有一个</li>
-                <li><Text strong>结束节点（圆形）</Text>：规则流程的结束点，可以有多个</li>
-                <li><Text strong>条件节点（矩形）</Text>：用于定义规则的条件判断，支持多种操作符</li>
-                <li><Text strong>动作节点（矩形）</Text>：用于定义规则执行时的动作，如设置值、调用方法等</li>
-                <li><Text strong>决策节点（菱形）</Text>：用于实现复杂的分支逻辑，基于表达式判断</li>
-                <li><Text strong>分组节点（矩形）</Text>：用于组织规则，设置优先级和议程组</li>
+                <li><Text strong>{t('help.nodeTypes.start')}</Text></li>
+                <li><Text strong>{t('help.nodeTypes.end')}</Text></li>
+                <li><Text strong>{t('help.nodeTypes.condition')}</Text></li>
+                <li><Text strong>{t('help.nodeTypes.action')}</Text></li>
+                <li><Text strong>{t('help.nodeTypes.decision')}</Text></li>
+                <li><Text strong>{t('help.nodeTypes.group')}</Text></li>
               </ul>
             </div>
           )
         },
         {
           key: 'add-node',
-          label: '添加节点',
+          label: t('help.addNode.label'),
           children: (
             <div>
               <Paragraph>
-                从左侧节点库中拖拽需要的节点到画布上即可创建节点。节点会自动放置在拖拽释放的位置。
+                {t('help.addNode.description1')}
               </Paragraph>
               <Paragraph>
-                提示：可以使用搜索框快速查找节点类型，或使用收藏功能保存常用节点。
+                {t('help.addNode.tip')}
               </Paragraph>
             </div>
           )
@@ -128,25 +128,25 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'create-connection',
-          label: '创建连接',
+          label: t('help.connectNodes.label'),
           children: (
             <div>
               <Paragraph>
-                点击节点的连接点（左右两侧的小圆点）并拖动到另一个节点的连接点即可创建连接。
+                {t('help.connectNodes.description1')}
               </Paragraph>
               <Paragraph>
-                连接表示规则执行的流程方向，从源节点流向目标节点。
+                {t('help.connectNodes.description2')}
               </Paragraph>
             </div>
           )
         },
         {
           key: 'delete-connection',
-          label: '删除连接',
+          label: t('help.deleteConnection.label'),
           children: (
             <div>
               <Paragraph>
-                点击选中连接线，然后按 Delete 键或使用右键菜单删除连接。
+                {t('help.deleteConnection.description')}
               </Paragraph>
             </div>
           )
@@ -164,31 +164,30 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'edit-node',
-          label: '编辑节点属性',
+          label: t('help.editProperties.label'),
           children: (
             <div>
               <Paragraph>
-                点击节点后，右侧属性面板会显示该节点的配置选项。根据节点类型的不同，可配置的属性也有所不同。
+                {t('help.editProperties.description1')}
               </Paragraph>
               <Paragraph>
-                属性面板会实时验证配置的正确性，并在有错误时显示提示信息。
+                {t('help.editProperties.description2')}
               </Paragraph>
             </div>
           )
         },
         {
           key: 'validation',
-          label: '配置验证',
+          label: t('help.configValidation.label'),
           children: (
             <div>
               <Paragraph>
-                系统会自动验证节点配置的正确性：
+                {t('help.configValidation.description1')}
               </Paragraph>
               <ul style={{ paddingLeft: 20 }}>
-                <li>必填字段不能为空</li>
-                <li>表达式语法必须正确</li>
-                <li>数值范围必须有效</li>
-                <li>操作符和值必须匹配</li>
+                <li>{t('help.configValidation.check1')}</li>
+                <li>{t('help.configValidation.check2')}</li>
+                <li>{t('help.configValidation.check3')}</li>
               </ul>
             </div>
           )
@@ -206,31 +205,29 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'compile-process',
-          label: '编译规则',
+          label: t('help.compileRules.label'),
           children: (
             <div>
               <Paragraph>
-                点击工具栏的"编译规则"按钮，系统会将可视化配置编译为Drools DRL规则文件。
+                {t('help.compileRules.description1')}
               </Paragraph>
               <Paragraph>
-                编译过程中会检查：
+                {t('help.compileRules.description2')}
               </Paragraph>
               <ul style={{ paddingLeft: 20 }}>
-                <li>节点连接的完整性</li>
-                <li>循环依赖检测</li>
-                <li>配置字段的有效性</li>
-                <li>DRL语法正确性</li>
+                <li>{t('help.compileRules.check1')}</li>
+                <li>{t('help.compileRules.check2')}</li>
               </ul>
             </div>
           )
         },
         {
           key: 'preview-drl',
-          label: '预览DRL代码',
+          label: t('help.previewCode.label'),
           children: (
             <div>
               <Paragraph>
-                点击"预览"按钮可以查看生成的DRL规则代码。代码预览窗口支持语法高亮和复制功能。
+                {t('help.previewCode.description')}
               </Paragraph>
             </div>
           )
@@ -248,36 +245,36 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'download-zip',
-          label: '下载ZIP包',
+          label: t('help.downloadZip.label'),
           children: (
             <div>
               <Paragraph>
-                点击"下载规则包"按钮，系统会生成包含以下文件的ZIP包：
+                {t('help.downloadZip.description1')}
               </Paragraph>
               <ul style={{ paddingLeft: 20 }}>
-                <li><Text code>rules.drl</Text>：编译后的DRL规则文件</li>
-                <li><Text code>README.md</Text>：使用说明文档</li>
-                <li><Text code>config.json</Text>：可视化配置备份</li>
+                <li><Text code>rules.drl</Text>：{t('help.downloadZip.file1')}</li>
+                <li><Text code>README.md</Text>：{t('help.downloadZip.file2')}</li>
+                <li><Text code>config.json</Text>：{t('help.downloadZip.file3')}</li>
               </ul>
             </div>
           )
         },
         {
           key: 'download-jar',
-          label: '下载JAR包',
+          label: t('help.downloadJar.label'),
           children: (
             <div>
               <Paragraph>
-                点击"下载JAR包"按钮，系统会生成可直接部署的JAR包，包含：
+                {t('help.downloadJar.description1')}
               </Paragraph>
               <ul style={{ paddingLeft: 20 }}>
-                <li>编译后的DRL规则文件</li>
-                <li>Maven POM配置文件</li>
-                <li>KieModule配置文件</li>
-                <li>MANIFEST.MF文件</li>
+                <li>{t('help.downloadJar.file1')}</li>
+                <li>{t('help.downloadJar.file2')}</li>
+                <li>{t('help.downloadJar.file3')}</li>
+                <li>MANIFEST.MF: MANIFEST.MF {t('help.downloadJar.file1')}</li>
               </ul>
               <Paragraph>
-                JAR包可以直接部署到Drools运行环境中使用。
+                {t('help.downloadJar.deployTip')}
               </Paragraph>
             </div>
           )
@@ -295,19 +292,18 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'template-library',
-          label: '模板库',
+          label: t('help.useTemplates.label'),
           children: (
             <div>
               <Paragraph>
-                点击工具栏的"模板库"按钮可以访问预定义的规则模板。模板按难度分类：
+                {t('help.useTemplates.description1')}
               </Paragraph>
               <ul style={{ paddingLeft: 20 }}>
-                <li><Text strong>基础模板</Text>：简单的单规则示例</li>
-                <li><Text strong>高级模板</Text>：包含复杂逻辑的规则示例</li>
-                <li><Text strong>工作流模板</Text>：完整的业务流程示例</li>
+                <li><Text strong>{t('templates.categories.basic')}</Text>：{t('help.useTemplates.template1')}</li>
+                <li><Text strong>{t('templates.categories.advanced')}</Text>：{t('help.useTemplates.template2')}</li>
               </ul>
               <Paragraph>
-                可以预览模板详情，点击"应用"按钮将模板加载到画布上。
+                {t('help.useTemplates.description2')}
               </Paragraph>
             </div>
           )
@@ -325,22 +321,22 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       children: [
         {
           key: 'shortcuts-intro',
-          label: '快捷键说明',
+          label: t('help.shortcuts.label'),
           children: (
             <div>
               <Paragraph>
-                使用快捷键可以大幅提高工作效率。点击工具栏的"快捷键"按钮查看完整的快捷键列表。
+                {t('help.shortcuts.description1')}
               </Paragraph>
               <Paragraph>
-                常用快捷键：
+                {t('help.shortcuts.description2')}
               </Paragraph>
               <ul style={{ paddingLeft: 20 }}>
-                <li><Text code>Ctrl + Z</Text>：撤销</li>
-                <li><Text code>Ctrl + Y</Text>：重做</li>
-                <li><Text code>Ctrl + S</Text>：保存</li>
-                <li><Text code>Delete</Text>：删除选中项</li>
-                <li><Text code>Ctrl + P</Text>：预览</li>
-                <li><Text code>Ctrl + Enter</Text>：编译</li>
+                <li><Text code>Ctrl + Z</Text>：{t('toolbar.undo')}</li>
+                <li><Text code>Ctrl + Y</Text>：{t('toolbar.redo')}</li>
+                <li><Text code>Ctrl + S</Text>：{t('toolbar.save')}</li>
+                <li><Text code>Delete</Text>：{t('editor.deleteNode')}</li>
+                <li><Text code>Ctrl + P</Text>：{t('toolbar.preview')}</li>
+                <li><Text code>Ctrl + Enter</Text>：{t('toolbar.compile')}</li>
               </ul>
             </div>
           )
@@ -380,16 +376,15 @@ export const HelpModal: React.FC<HelpModalProps> = ({
           border: '1px solid #bae7ff'
         }}>
           <Title level={5} style={{ marginBottom: 12, color: '#1890ff' }}>
-            需要更多帮助？
+            {t('help.resources.label')}
           </Title>
           <Paragraph style={{ marginBottom: 0, color: '#595959' }}>
-            如果您在使用过程中遇到问题，可以：
+            {t('help.resources.description1')}
           </Paragraph>
           <ul style={{ marginTop: 8, paddingLeft: 20, color: '#595959' }}>
-            <li>查看Drools官方文档了解规则语法</li>
-            <li>参考模板库中的示例学习最佳实践</li>
-            <li>使用预览功能检查生成的代码</li>
-            <li>联系技术支持获取帮助</li>
+            <li>{t('help.resources.link1')}</li>
+            <li>{t('help.resources.link2')}</li>
+            <li>{t('help.resources.link3')}</li>
           </ul>
         </div>
       </div>

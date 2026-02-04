@@ -14,8 +14,10 @@ import {
   RedoOutlined,
   ClockCircleOutlined,
   AppstoreOutlined,
-  KeyboardOutlined,
-  QuestionCircleOutlined
+  KeyOutlined,
+  QuestionCircleOutlined,
+  ApiOutlined,
+  PlayCircleOutlined
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector/LanguageSelector';
@@ -41,6 +43,8 @@ export interface ToolbarProps {
   saveStatus?: 'saved' | 'unsaved' | 'saving';
   lastSavedTime?: Date | null;
   onApplyTemplate?: (template: any) => void;
+  onOpenVariables?: () => void;
+  onOpenTest?: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -60,7 +64,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onRedo,
   saveStatus = 'unsaved',
   lastSavedTime,
-  onApplyTemplate
+  onApplyTemplate,
+  onOpenVariables,
+  onOpenTest
 }) => {
   const { t } = useTranslation();
   const [templateLibraryVisible, setTemplateLibraryVisible] = React.useState(false);
@@ -97,10 +103,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     const diff = now.getTime() - lastSavedTime.getTime();
     const minutes = Math.floor(diff / 60000);
     
-    if (minutes < 1) return t('toolbar.lastSaved', { time: '刚刚' });
-    if (minutes < 60) return t('toolbar.lastSaved', { time: `${minutes}分钟前` });
+    if (minutes < 1) return t('toolbar.lastSaved', { time: t('toolbar.time.justNow') });
+    if (minutes < 60) return t('toolbar.lastSaved', { time: t('toolbar.time.minutesAgo', { count: minutes }) });
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return t('toolbar.lastSaved', { time: `${hours}小时前` });
+    if (hours < 24) return t('toolbar.lastSaved', { time: t('toolbar.time.hoursAgo', { count: hours }) });
     return t('toolbar.lastSaved', { time: lastSavedTime.toLocaleDateString() });
   };
 
@@ -116,142 +122,161 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         flexWrap: 'wrap',
         gap: 12
       }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-          {t('toolbar.title')}
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
+            {t('toolbar.title')}
+          </h2>
+          <Space size="small" wrap>
+            {getSaveStatusTag()}
+            {formatLastSavedTime() && (
+              <span style={{ fontSize: 12, color: '#999' }}>
+                <ClockCircleOutlined /> {formatLastSavedTime()}
+              </span>
+            )}
+          </Space>
+        </div>
+
         <Space size="small" wrap>
-          {getSaveStatusTag()}
-          {formatLastSavedTime() && (
-            <span style={{ fontSize: 12, color: '#999' }}>
-              <ClockCircleOutlined /> {formatLastSavedTime()}
-            </span>
-          )}
+          <Tooltip title={t('toolbar.undo')}>
+            <Button 
+              icon={<UndoOutlined />} 
+              onClick={onUndo}
+              disabled={!canUndo}
+            />
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.redo')}>
+            <Button 
+              icon={<RedoOutlined />} 
+              onClick={onRedo}
+              disabled={!canRedo}
+            />
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.templates')}>
+            <Button 
+              icon={<AppstoreOutlined />} 
+              onClick={() => setTemplateLibraryVisible(true)}
+            >
+              {t('toolbar.templates')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.variablesTooltip')}>
+            <Button 
+              icon={<ApiOutlined />} 
+              onClick={onOpenVariables}
+            >
+              {t('toolbar.variables')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.testTooltip')}>
+            <Button 
+              icon={<PlayCircleOutlined />} 
+              onClick={onOpenTest}
+            >
+              {t('toolbar.test')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.shortcuts')}>
+            <Button 
+              icon={<KeyOutlined />} 
+              onClick={() => setShortcutsVisible(true)}
+            />
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.preview')}>
+            <Button 
+              icon={<EyeOutlined />} 
+              onClick={onPreview}
+            >
+              {t('toolbar.preview')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.compile')}>
+            <Button 
+              type="primary"
+              icon={<CodeOutlined />} 
+              onClick={onCompile}
+              disabled={!canCompile}
+            >
+              {t('toolbar.compile')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.download')}>
+            <Button 
+              icon={<DownloadOutlined />} 
+              onClick={onDownload}
+              disabled={!canCompile}
+            >
+              {t('toolbar.download')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.downloadJar')}>
+            <Button 
+              icon={<FileZipOutlined />} 
+              onClick={onDownloadJar}
+              disabled={!canCompile}
+            >
+              {t('toolbar.downloadJar')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.save')}>
+            <Button 
+              icon={<SaveOutlined />} 
+              onClick={onSave}
+            >
+              {t('toolbar.save')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.clear')}>
+            <Button 
+              danger
+              icon={<ClearOutlined />} 
+              onClick={handleClear}
+            >
+              {t('toolbar.clear')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.help')}>
+            <Button 
+              icon={<QuestionCircleOutlined />} 
+              onClick={() => setHelpVisible(true)}
+            />
+          </Tooltip>
+        </Space>
+
+        <Space size="small">
+          <LanguageSelector />
+
+          <Tooltip title={t('toolbar.zoomIn')}>
+            <Button 
+              icon={<ZoomInOutlined />} 
+              onClick={onZoomIn}
+            />
+          </Tooltip>
+          <Tooltip title={t('toolbar.zoomOut')}>
+            <Button 
+              icon={<ZoomOutOutlined />} 
+              onClick={onZoomOut}
+            />
+          </Tooltip>
+          <Tooltip title={t('toolbar.fitView')}>
+            <Button 
+              icon={<FullscreenOutlined />} 
+              onClick={onFitView}
+            />
+          </Tooltip>
         </Space>
       </div>
-
-      <Space size="small">
-        <Tooltip title={t('toolbar.undo')}>
-          <Button 
-            icon={<UndoOutlined />} 
-            onClick={onUndo}
-            disabled={!canUndo}
-          />
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.redo')}>
-          <Button 
-            icon={<RedoOutlined />} 
-            onClick={onRedo}
-            disabled={!canRedo}
-          />
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.templates')}>
-          <Button 
-            icon={<AppstoreOutlined />} 
-            onClick={() => setTemplateLibraryVisible(true)}
-          >
-            {t('toolbar.templates')}
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.shortcuts')}>
-          <Button 
-            icon={<KeyboardOutlined />} 
-            onClick={() => setShortcutsVisible(true)}
-          />
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.preview')}>
-          <Button 
-            icon={<EyeOutlined />} 
-            onClick={onPreview}
-          >
-            {t('toolbar.preview')}
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.compile')}>
-          <Button 
-            type="primary"
-            icon={<CodeOutlined />} 
-            onClick={onCompile}
-            disabled={!canCompile}
-          >
-            {t('toolbar.compile')}
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.download')}>
-          <Button 
-            icon={<DownloadOutlined />} 
-            onClick={onDownload}
-            disabled={!canCompile}
-          >
-            {t('toolbar.download')}
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.downloadJar')}>
-          <Button 
-            icon={<FileZipOutlined />} 
-            onClick={onDownloadJar}
-            disabled={!canCompile}
-          >
-            {t('toolbar.downloadJar')}
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.save')}>
-          <Button 
-            icon={<SaveOutlined />} 
-            onClick={onSave}
-          >
-            {t('toolbar.save')}
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.clear')}>
-          <Button 
-            danger
-            icon={<ClearOutlined />} 
-            onClick={handleClear}
-          >
-            {t('toolbar.clear')}
-          </Button>
-        </Tooltip>
-
-        <Tooltip title={t('toolbar.help')}>
-          <Button 
-            icon={<QuestionCircleOutlined />} 
-            onClick={() => setHelpVisible(true)}
-          />
-        </Tooltip>
-      </Space>
-
-      <Space size="small">
-        <LanguageSelector />
-
-        <Tooltip title={t('toolbar.zoomIn')}>
-          <Button 
-            icon={<ZoomInOutlined />} 
-            onClick={onZoomIn}
-          />
-        </Tooltip>
-        <Tooltip title={t('toolbar.zoomOut')}>
-          <Button 
-            icon={<ZoomOutOutlined />} 
-            onClick={onZoomOut}
-          />
-        </Tooltip>
-        <Tooltip title={t('toolbar.fitView')}>
-          <Button 
-            icon={<FullscreenOutlined />} 
-            onClick={onFitView}
-          />
-        </Tooltip>
-      </Space>
 
       <TemplateLibrary
         visible={templateLibraryVisible}

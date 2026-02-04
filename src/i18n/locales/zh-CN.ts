@@ -64,7 +64,16 @@ export default {
     clearConfirmContent: '确定要清空所有节点和连线吗？此操作不可恢复。',
     clearConfirmOk: '确定',
     clearConfirmCancel: '取消',
-    cleared: '已清空画布'
+    cleared: '已清空画布',
+    variables: '变量',
+    variablesTooltip: '变量管理',
+    test: '测试',
+    testTooltip: '规则测试',
+    time: {
+      justNow: '刚刚',
+      minutesAgo: '{{count}}分钟前',
+      hoursAgo: '{{count}}小时前'
+    }
   },
   nodePalette: {
     title: '节点库',
@@ -86,8 +95,19 @@ export default {
     favorites: '收藏节点',
     searchPlaceholder: '搜索节点...',
     noResults: '未找到匹配的节点',
-    addToFavorites: '添加到收藏',
-    removeFromFavorites: '从收藏移除'
+    noBasicNodes: '暂无基础节点',
+    noLogicNodes: '暂无逻辑节点',
+    noDataNodes: '暂无数据节点',
+    addToFavorites: '收藏',
+    removeFromFavorites: '取消收藏',
+    descriptions: {
+      start: '规则流程的起始点',
+      end: '规则流程的结束点',
+      condition: '条件判断节点',
+      action: '执行动作节点',
+      decision: '决策分支节点',
+      group: '规则分组节点'
+    }
   },
   propertyPanel: {
     title: '属性配置',
@@ -363,5 +383,97 @@ export default {
     templateApplyFailed: '模板应用失败',
     layoutApplied: '布局已应用',
     layoutApplyFailed: '布局应用失败'
+  },
+  testPanel: {
+    title: '规则测试面板',
+    close: '关闭',
+    runAll: '运行所有测试',
+    totalCases: '总用例',
+    passed: '通过',
+    failed: '失败',
+    pending: '待测试',
+    addTestCase: '添加测试用例',
+    testName: '测试名称',
+    testData: '测试数据 (JSON)',
+    expected: '期望结果 (JSON)',
+    add: '添加',
+    runAgain: '重新运行',
+    clearAll: '清空所有',
+    run: '运行',
+    input: '输入',
+    expectedResult: '期望',
+    actual: '实际',
+    executionTime: '执行时间',
+    noTestCases: '暂无测试用例',
+    addTestCasesHint: '添加测试用例来验证规则逻辑',
+    compiledCode: '编译的规则代码',
+    copy: '复制',
+    testCaseAdded: '测试用例已添加',
+    testCaseDeleted: '测试用例已删除',
+    allTestCasesCleared: '所有测试用例已清空',
+    confirmClear: '确认清空',
+    confirmClearContent: '确定要清空所有测试用例吗？',
+    testExecutionFailed: '测试执行失败',
+    batchTestExecutionFailed: '批量测试执行失败',
+    testsCompleted: '已完成 {{count}} 个测试用例',
+    status: {
+      passed: '通过',
+      failed: '失败',
+      pending: '待测试'
+    },
+    validation: {
+      testNameRequired: '请输入测试名称',
+      testDataRequired: '请输入测试数据',
+      expectedRequired: '请输入期望结果'
+    }
+  },
+  variableManager: {
+    title: '变量管理器',
+    close: '取消',
+    saveConfig: '保存配置',
+    addVariable: '添加变量',
+    editVariable: '编辑变量',
+    addVariableModal: '添加变量',
+    editVariableModal: '编辑变量',
+    variableName: '变量名',
+    variableType: '变量类型',
+    variableScope: '作用域',
+    defaultValue: '默认值',
+    description: '描述',
+    actions: '操作',
+    variableDeleted: '变量已删除',
+    variableCopied: '变量已复制',
+    variableUpdated: '变量已更新',
+    variableAdded: '变量已添加',
+    variableConfigSaved: '变量配置已保存',
+    confirmDelete: '确认删除',
+    confirmDeleteContent: '确定要删除这个变量吗？',
+    fillRequiredFields: '请填写所有必填字段',
+    usageInstructions: '使用说明',
+    usageInstructionsContent: {
+      global: '全局变量可在所有规则中使用',
+      session: '会话变量在当前会话中有效',
+      node: '节点变量仅在特定节点作用域内有效',
+      reference: '在条件节点中使用 $variableName 引用变量'
+    },
+    placeholders: {
+      variableName: '例如: $fact.age',
+      selectVariableType: '选择变量类型',
+      selectVariableScope: '选择变量作用域',
+      defaultValue: '输入默认值（可选）',
+      description: '输入变量描述（可选）'
+    },
+    types: {
+      string: 'String (字符串)',
+      number: 'Number (数字)',
+      boolean: 'Boolean (布尔)',
+      object: 'Object (对象)',
+      array: 'Array (数组)'
+    },
+    scopes: {
+      global: 'Global (全局)',
+      session: 'Session (会话)',
+      node: 'Node (节点)'
+    }
   }
 };

@@ -59,7 +59,14 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
   };
 
   const highlightDRL = (code: string) => {
-    return code
+    const escapedCode = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    return escapedCode
       .replace(/(package|import|global|rule|when|then|end|salience|agenda-group|activation-group|no-loop)/g, 
         '<span style="color: #d73a49; font-weight: bold;">$1</span>')
       .replace(/(\$[a-zA-Z_][a-zA-Z0-9_]*)/g, 
@@ -68,7 +75,7 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
         '<span style="color: #6f42c1;">$1</span>')
       .replace(/(\/\/.*$)/gm, 
         '<span style="color: #6a737d; font-style: italic;">$1</span>')
-      .replace(/("(?:[^"\\]|\\.)*")/g, 
+      .replace(/(&quot;(?:[^&quot;\\]|\\.)*&quot;)/g, 
         '<span style="color: #032f62;">$1</span>');
   };
 

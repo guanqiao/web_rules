@@ -23,6 +23,8 @@ import { NodePalette, NodeType } from '@/components/NodePalette/NodePalette';
 import { PropertyPanel } from '@/components/PropertyPanel/PropertyPanel';
 import { Toolbar } from '@/components/Toolbar/Toolbar';
 import { DroolsPreview } from '@/components/DroolsPreview/DroolsPreview';
+import { VariableManager } from '@/components/VariableManager/VariableManager';
+import { TestPanel } from '@/components/TestPanel/TestPanel';
 
 import { StartNode } from '@/components/custom-nodes/StartNode';
 import { EndNode } from '@/components/custom-nodes/EndNode';
@@ -71,6 +73,9 @@ export const RuleEditor: React.FC = () => {
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
+  const [variableManagerVisible, setVariableManagerVisible] = useState(false);
+  const [testPanelVisible, setTestPanelVisible] = useState(false);
+  const [variables, setVariables] = useState<any[]>([]);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
@@ -430,6 +435,14 @@ export const RuleEditor: React.FC = () => {
     }
   }, [reactFlowInstance]);
 
+  const onOpenVariables = useCallback(() => {
+    setVariableManagerVisible(true);
+  }, []);
+
+  const onOpenTest = useCallback(() => {
+    setTestPanelVisible(true);
+  }, []);
+
   const onApplyTemplate = useCallback((template: any) => {
     const offsetX = 50;
     const offsetY = 50;
@@ -476,6 +489,8 @@ export const RuleEditor: React.FC = () => {
         saveStatus={saveStatus}
         lastSavedTime={lastSavedTime}
         onApplyTemplate={onApplyTemplate}
+        onOpenVariables={onOpenVariables}
+        onOpenTest={onOpenTest}
       />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -497,9 +512,11 @@ export const RuleEditor: React.FC = () => {
             onDragOver={onDragOver}
             nodeTypes={nodeTypes}
             fitView
+            snapToGrid={snapToGrid}
+            snapGrid={[15, 15]}
             attributionPosition="bottom-left"
           >
-            <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+            {showGrid && <Background variant={BackgroundVariant.Dots} gap={15} size={1} />}
             <Controls />
             <MiniMap 
               nodeColor={(node) => {
@@ -515,6 +532,29 @@ export const RuleEditor: React.FC = () => {
               }}
               style={{ height: 120 }}
             />
+            
+            <Panel position="top-right">
+              <Space direction="vertical" size="small">
+                <Tooltip title="显示网格">
+                  <Switch
+                    checked={showGrid}
+                    onChange={setShowGrid}
+                    checkedChildren="网格"
+                    unCheckedChildren="无网格"
+                    size="small"
+                  />
+                </Tooltip>
+                <Tooltip title="吸附到网格">
+                  <Switch
+                    checked={snapToGrid}
+                    onChange={setSnapToGrid}
+                    checkedChildren="吸附"
+                    unCheckedChildren="自由"
+                    size="small"
+                  />
+                </Tooltip>
+              </Space>
+            </Panel>
           </ReactFlow>
         </div>
 
@@ -547,6 +587,30 @@ export const RuleEditor: React.FC = () => {
           onChange={(e) => setRuleName(e.target.value)}
         />
       </Modal>
+
+      <VariableManager
+        visible={variableManagerVisible}
+        onClose={() => setVariableManagerVisible(false)}
+        variables={variables}
+        onSave={(newVariables) => setVariables(newVariables)}
+      />
+
+      <TestPanel
+        visible={testPanelVisible}
+        onClose={() => setTestPanelVisible(false)}
+        nodes={nodes}
+        edges={edges}
+        onCompile={async () => {
+          const connections = edges.map(e => ({
+            id: e.id,
+            source: e.source,
+            target: e.target,
+            sourceHandle: e.sourceHandle || undefined,
+            targetHandle: e.targetHandle || undefined
+          }));
+          return compileToDRL(nodes as RuleNode[], connections);
+        }}
+      />
     </div>
   );
 };

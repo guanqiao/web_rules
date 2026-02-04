@@ -8,8 +8,9 @@ import {
   SettingOutlined,
   ThunderboltOutlined,
   FileTextOutlined,
-  KeyboardOutlined,
-  AppstoreOutlined
+  KeyOutlined,
+  AppstoreOutlined,
+  KeyboardOutlined
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
@@ -317,7 +318,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       key: 'keyboard-shortcuts',
       label: (
         <Space>
-          <KeyboardOutlined style={{ color: '#fa8c16' }} />
+          <KeyOutlined style={{ color: '#fa8c16' }} />
           <span>{t('help.sections.keyboardShortcuts')}</span>
         </Space>
       ),

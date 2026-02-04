@@ -42,7 +42,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       color: '#52c41a',
       bgColor: '#f6ffed',
       category: 'basic',
-      description: '规则流程的起始点'
+      description: t('nodePalette.descriptions.start')
     },
     {
       type: 'end',
@@ -51,7 +51,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       color: '#ff4d4f',
       bgColor: '#fff1f0',
       category: 'basic',
-      description: '规则流程的结束点'
+      description: t('nodePalette.descriptions.end')
     },
     {
       type: 'condition',
@@ -60,7 +60,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       color: '#1890ff',
       bgColor: '#e6f7ff',
       category: 'logic',
-      description: '条件判断节点'
+      description: t('nodePalette.descriptions.condition')
     },
     {
       type: 'action',
@@ -69,7 +69,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       color: '#faad14',
       bgColor: '#fffbe6',
       category: 'data',
-      description: '执行动作节点'
+      description: t('nodePalette.descriptions.action')
     },
     {
       type: 'decision',
@@ -78,7 +78,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       color: '#722ed1',
       bgColor: '#f9f0ff',
       category: 'logic',
-      description: '决策分支节点'
+      description: t('nodePalette.descriptions.decision')
     },
     {
       type: 'group',
@@ -87,7 +87,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       color: '#13c2c2',
       bgColor: '#e6fffb',
       category: 'data',
-      description: '规则分组节点'
+      description: t('nodePalette.descriptions.group')
     }
   ];
 
@@ -150,7 +150,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
             {node.description}
           </Text>
         </div>
-        <Tooltip title={favorites.has(node.type) ? '取消收藏' : '收藏'}>
+        <Tooltip title={favorites.has(node.type) ? t('nodePalette.removeFromFavorites') : t('nodePalette.addToFavorites')}>
           <div 
             onClick={(e) => {
               e.stopPropagation();
@@ -175,7 +175,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       label: (
         <span>
           <AppstoreOutlined style={{ marginRight: 4 }} />
-          全部
+          {t('nodePalette.categories.all')}
         </span>
       ),
       children: filteredNodes.length > 0 ? (
@@ -185,7 +185,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       ) : (
         <Empty 
           image={Empty.PRESENTED_IMAGE_SIMPLE} 
-          description="未找到匹配的节点"
+          description={t('nodePalette.noResults')}
           style={{ padding: '20px 0' }}
         />
       )
@@ -195,7 +195,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       label: (
         <span>
           <PlayCircleOutlined style={{ marginRight: 4 }} />
-          基础节点
+          {t('nodePalette.categories.basic')}
         </span>
       ),
       children: filteredNodes.filter(n => n.category === 'basic').length > 0 ? (
@@ -205,7 +205,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       ) : (
         <Empty 
           image={Empty.PRESENTED_IMAGE_SIMPLE} 
-          description="暂无基础节点"
+          description={t('nodePalette.noBasicNodes')}
           style={{ padding: '20px 0' }}
         />
       )
@@ -215,7 +215,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       label: (
         <span>
           <ApartmentOutlined style={{ marginRight: 4 }} />
-          逻辑节点
+          {t('nodePalette.categories.logic')}
         </span>
       ),
       children: filteredNodes.filter(n => n.category === 'logic').length > 0 ? (
@@ -225,7 +225,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       ) : (
         <Empty 
           image={Empty.PRESENTED_IMAGE_SIMPLE} 
-          description="暂无逻辑节点"
+          description={t('nodePalette.noLogicNodes')}
           style={{ padding: '20px 0' }}
         />
       )
@@ -235,7 +235,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       label: (
         <span>
           <ThunderboltOutlined style={{ marginRight: 4 }} />
-          数据节点
+          {t('nodePalette.categories.data')}
         </span>
       ),
       children: filteredNodes.filter(n => n.category === 'data').length > 0 ? (
@@ -245,7 +245,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       ) : (
         <Empty 
           image={Empty.PRESENTED_IMAGE_SIMPLE} 
-          description="暂无数据节点"
+          description={t('nodePalette.noDataNodes')}
           style={{ padding: '20px 0' }}
         />
       )

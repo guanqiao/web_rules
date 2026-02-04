@@ -62,7 +62,16 @@ export default {
     clearConfirmContent: 'Are you sure you want to clear all nodes and edges? This action cannot be undone.',
     clearConfirmOk: 'OK',
     clearConfirmCancel: 'Cancel',
-    cleared: 'Canvas cleared'
+    cleared: 'Canvas cleared',
+    variables: 'Variables',
+    variablesTooltip: 'Variable Management',
+    test: 'Test',
+    testTooltip: 'Rule Test',
+    time: {
+      justNow: 'Just now',
+      minutesAgo: '{{count}} minutes ago',
+      hoursAgo: '{{count}} hours ago'
+    }
   },
   nodePalette: {
     title: 'Node Palette',
@@ -74,6 +83,28 @@ export default {
       action: 'Action',
       decision: 'Decision',
       group: 'Group'
+    },
+    categories: {
+      all: 'All',
+      basic: 'Basic Nodes',
+      logic: 'Logic Nodes',
+      data: 'Data Nodes'
+    },
+    favorites: 'Favorite Nodes',
+    searchPlaceholder: 'Search nodes...',
+    noResults: 'No matching nodes found',
+    noBasicNodes: 'No basic nodes',
+    noLogicNodes: 'No logic nodes',
+    noDataNodes: 'No data nodes',
+    addToFavorites: 'Add to favorites',
+    removeFromFavorites: 'Remove from favorites',
+    descriptions: {
+      start: 'Starting point of rule flow',
+      end: 'Ending point of rule flow',
+      condition: 'Condition judgment node',
+      action: 'Action execution node',
+      decision: 'Decision branch node',
+      group: 'Rule grouping node'
     }
   },
   propertyPanel: {
@@ -341,5 +372,97 @@ export default {
     templateApplyFailed: 'Template application failed',
     layoutApplied: 'Layout applied',
     layoutApplyFailed: 'Layout application failed'
+  },
+  testPanel: {
+    title: 'Rule Test Panel',
+    close: 'Close',
+    runAll: 'Run All Tests',
+    totalCases: 'Total Cases',
+    passed: 'Passed',
+    failed: 'Failed',
+    pending: 'Pending',
+    addTestCase: 'Add Test Case',
+    testName: 'Test Name',
+    testData: 'Test Data (JSON)',
+    expected: 'Expected Result (JSON)',
+    add: 'Add',
+    runAgain: 'Run Again',
+    clearAll: 'Clear All',
+    run: 'Run',
+    input: 'Input',
+    expectedResult: 'Expected',
+    actual: 'Actual',
+    executionTime: 'Execution Time',
+    noTestCases: 'No test cases',
+    addTestCasesHint: 'Add test cases to verify rule logic',
+    compiledCode: 'Compiled Rule Code',
+    copy: 'Copy',
+    testCaseAdded: 'Test case added',
+    testCaseDeleted: 'Test case deleted',
+    allTestCasesCleared: 'All test cases cleared',
+    confirmClear: 'Confirm Clear',
+    confirmClearContent: 'Are you sure you want to clear all test cases?',
+    testExecutionFailed: 'Test execution failed',
+    batchTestExecutionFailed: 'Batch test execution failed',
+    testsCompleted: 'Completed {{count}} test cases',
+    status: {
+      passed: 'Passed',
+      failed: 'Failed',
+      pending: 'Pending'
+    },
+    validation: {
+      testNameRequired: 'Please enter test name',
+      testDataRequired: 'Please enter test data',
+      expectedRequired: 'Please enter expected result'
+    }
+  },
+  variableManager: {
+    title: 'Variable Manager',
+    close: 'Cancel',
+    saveConfig: 'Save Config',
+    addVariable: 'Add Variable',
+    editVariable: 'Edit Variable',
+    addVariableModal: 'Add Variable',
+    editVariableModal: 'Edit Variable',
+    variableName: 'Variable Name',
+    variableType: 'Variable Type',
+    variableScope: 'Scope',
+    defaultValue: 'Default Value',
+    description: 'Description',
+    actions: 'Actions',
+    variableDeleted: 'Variable deleted',
+    variableCopied: 'Variable copied',
+    variableUpdated: 'Variable updated',
+    variableAdded: 'Variable added',
+    variableConfigSaved: 'Variable configuration saved',
+    confirmDelete: 'Confirm Delete',
+    confirmDeleteContent: 'Are you sure you want to delete this variable?',
+    fillRequiredFields: 'Please fill in all required fields',
+    usageInstructions: 'Usage Instructions',
+    usageInstructionsContent: {
+      global: 'Global variables can be used in all rules',
+      session: 'Session variables are valid in the current session',
+      node: 'Node variables are only valid within specific node scope',
+      reference: 'Use $variableName to reference variables in condition nodes'
+    },
+    placeholders: {
+      variableName: 'e.g., $fact.age',
+      selectVariableType: 'Select variable type',
+      selectVariableScope: 'Select variable scope',
+      defaultValue: 'Enter default value (optional)',
+      description: 'Enter variable description (optional)'
+    },
+    types: {
+      string: 'String',
+      number: 'Number',
+      boolean: 'Boolean',
+      object: 'Object',
+      array: 'Array'
+    },
+    scopes: {
+      global: 'Global',
+      session: 'Session',
+      node: 'Node'
+    }
   }
 };

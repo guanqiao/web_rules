@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Table, Tag } from 'antd';
 import { 
-  KeyboardOutlined,
+  KeyOutlined,
   UndoOutlined,
   RedoOutlined,
   SaveOutlined,
@@ -56,9 +56,9 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
     {
       category: '节点操作',
       items: [
-        { key: 'selectAll', action: t('shortcuts.selectAll'), shortcut: 'Ctrl + A', icon: <KeyboardOutlined /> },
-        { key: 'search', action: t('shortcuts.search'), shortcut: 'Ctrl + F', icon: <KeyboardOutlined /> },
-        { key: 'help', action: t('shortcuts.help'), shortcut: 'F1', icon: <KeyboardOutlined /> }
+        { key: 'selectAll', action: t('shortcuts.selectAll'), shortcut: 'Ctrl + A', icon: <KeyOutlined /> },
+        { key: 'search', action: t('shortcuts.search'), shortcut: 'Ctrl + F', icon: <KeyOutlined /> },
+        { key: 'help', action: t('shortcuts.help'), shortcut: 'F1', icon: <KeyOutlined /> }
       ]
     }
   ];
@@ -112,7 +112,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
     <Modal
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <KeyboardOutlined style={{ color: '#1890ff', fontSize: 20 }} />
+          <KeyOutlined style={{ color: '#1890ff', fontSize: 20 }} />
           <span>{t('shortcuts.title')}</span>
         </div>
       }

@@ -4,7 +4,7 @@ import { Card } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 export const ConditionNode: React.FC<NodeProps> = ({ data, selected }) => {
-  const config = data.config || {};
+  const config = data.config || {} as any;
   
   return (
     <Card
@@ -19,19 +19,19 @@ export const ConditionNode: React.FC<NodeProps> = ({ data, selected }) => {
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <FilterOutlined style={{ color: '#1890ff', fontSize: 16 }} />
-          <span style={{ fontWeight: 600, fontSize: 13 }}>{data.label}</span>
+          <span style={{ fontWeight: 600, fontSize: 13 }}>{String(data.label)}</span>
         </div>
       }
     >
       <div style={{ fontSize: 11, color: '#666' }}>
         {config.field && (
           <div style={{ marginBottom: 4 }}>
-            <strong>字段:</strong> {config.field}
+            <strong>字段:</strong> {String(config.field)}
           </div>
         )}
         {config.operator && (
           <div style={{ marginBottom: 4 }}>
-            <strong>操作:</strong> {config.operator}
+            <strong>操作:</strong> {String(config.operator)}
           </div>
         )}
         {config.value !== undefined && (

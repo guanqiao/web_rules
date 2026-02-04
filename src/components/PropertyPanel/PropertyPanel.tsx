@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Form, Input, Select, InputNumber, Button, Space, Divider } from 'antd';
+import { Card, Form, Input, Select, InputNumber, Button, Divider } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
@@ -17,7 +17,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 }) => {
   const [form] = Form.useForm();
 
-  const handleValuesChange = (changedValues: any, allValues: any) => {
+  const handleValuesChange = (_changedValues: any, allValues: any) => {
     if (selectedNode) {
       onUpdateNode(selectedNode.id, {
         ...selectedNode.data,

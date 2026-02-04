@@ -17,7 +17,7 @@ export const EndNode: React.FC<NodeProps> = ({ data, selected }) => {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <StopOutlined style={{ color: '#ff4d4f', fontSize: 16 }} />
-        <span style={{ fontWeight: 600, fontSize: 12 }}>{data.label}</span>
+        <span style={{ fontWeight: 600, fontSize: 12 }}>{String(data.label)}</span>
       </div>
       <Handle type="target" position={Position.Left} style={{ background: '#ff4d4f' }} />
     </Card>

@@ -17,7 +17,7 @@ export const StartNode: React.FC<NodeProps> = ({ data, selected }) => {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <PlayCircleOutlined style={{ color: '#52c41a', fontSize: 16 }} />
-        <span style={{ fontWeight: 600, fontSize: 12 }}>{data.label}</span>
+        <span style={{ fontWeight: 600, fontSize: 12 }}>{String(data.label)}</span>
       </div>
       <Handle type="source" position={Position.Right} style={{ background: '#52c41a' }} />
     </Card>

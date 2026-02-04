@@ -1,7 +1,6 @@
 import React from 'react';
 import { Space, Button, Tooltip, Modal, message } from 'antd';
 import {
-  PlayCircleOutlined,
   CodeOutlined,
   DownloadOutlined,
   SaveOutlined,
@@ -9,13 +8,15 @@ import {
   EyeOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
-  FullscreenOutlined
+  FullscreenOutlined,
+  FileZipOutlined
 } from '@ant-design/icons';
 
 export interface ToolbarProps {
   onPreview: () => void;
   onCompile: () => void;
   onDownload: () => void;
+  onDownloadJar: () => void;
   onSave: () => void;
   onClear: () => void;
   onZoomIn: () => void;
@@ -28,6 +29,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onPreview,
   onCompile,
   onDownload,
+  onDownloadJar,
   onSave,
   onClear,
   onZoomIn,
@@ -91,6 +93,16 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             disabled={!canCompile}
           >
             下载
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="下载 JAR 包">
+          <Button 
+            icon={<FileZipOutlined />} 
+            onClick={onDownloadJar}
+            disabled={!canCompile}
+          >
+            下载 JAR
           </Button>
         </Tooltip>
 

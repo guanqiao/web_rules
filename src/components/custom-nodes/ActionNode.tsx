@@ -4,7 +4,7 @@ import { Card } from 'antd';
 import { ThunderboltOutlined } from '@ant-design/icons';
 
 export const ActionNode: React.FC<NodeProps> = ({ data, selected }) => {
-  const config = data.config || {};
+  const config = data.config || {} as any;
   
   return (
     <Card
@@ -19,19 +19,19 @@ export const ActionNode: React.FC<NodeProps> = ({ data, selected }) => {
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <ThunderboltOutlined style={{ color: '#faad14', fontSize: 16 }} />
-          <span style={{ fontWeight: 600, fontSize: 13 }}>{data.label}</span>
+          <span style={{ fontWeight: 600, fontSize: 13 }}>{String(data.label)}</span>
         </div>
       }
     >
       <div style={{ fontSize: 11, color: '#666' }}>
         {config.type && (
           <div style={{ marginBottom: 4 }}>
-            <strong>类型:</strong> {config.type}
+            <strong>类型:</strong> {String(config.type)}
           </div>
         )}
         {config.target && (
           <div style={{ marginBottom: 4 }}>
-            <strong>目标:</strong> {config.target}
+            <strong>目标:</strong> {String(config.target)}
           </div>
         )}
         {config.value !== undefined && (

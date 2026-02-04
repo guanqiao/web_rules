@@ -1,4 +1,5 @@
 import { DroolsRule, DroolsRuleItem, RuleNode, Connection, ConditionConfig, ActionConfig, GroupConfig, DecisionConfig } from '@/types/rule.types';
+import { DroolsJarBuilder, JarBuildConfig } from './DroolsJarBuilder';
 
 export class DroolsCompiler {
   private packageName: string = 'com.rules';
@@ -6,6 +7,119 @@ export class DroolsCompiler {
   private globals: Set<string> = new Set();
   private rules: DroolsRuleItem[] = [];
   private currentGroupConfig: GroupConfig | null = null;
+
+  private static readonly OPERATOR_MAP: Record<string, string> = {
+    '==': '==',
+    '!=': '!=',
+    'gt': '>',
+    'lt': '<',
+    'gte': '>=',
+    'lte': '<=',
+    'contains': 'contains',
+    'in': 'in',
+    'not in': 'not in'
+  };
+
+  private static escapeStringValue(value: string): string {
+    return value
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
+  }
+
+  private static formatValueForDRL(value: any): string {
+    if (value === null || value === undefined) {
+      return 'null';
+    }
+    
+    if (typeof value === 'boolean') {
+      return value ? 'true' : 'false';
+    }
+    
+    if (typeof value === 'number') {
+      return String(value);
+    }
+    
+    if (typeof value === 'string') {
+      return `"${DroolsCompiler.escapeStringValue(value)}"`;
+    }
+    
+    if (Array.isArray(value)) {
+      return value.map(v => DroolsCompiler.formatValueForDRL(v)).join(', ');
+    }
+    
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    
+    return String(value);
+  }
+
+  private static validateConditionConfig(config: ConditionConfig): void {
+    if (!config.field || config.field.trim() === '') {
+      throw new Error('条件配置缺少必需的字段名');
+    }
+    if (!config.operator || config.operator.trim() === '') {
+      throw new Error('条件配置缺少必需的操作符');
+    }
+    if (config.value === undefined || config.value === null) {
+      throw new Error('条件配置缺少必需的值');
+    }
+  }
+
+  private static validateActionConfig(config: ActionConfig): void {
+    if (!config.type || config.type.trim() === '') {
+      throw new Error('动作配置缺少必需的类型');
+    }
+    if (!config.target || config.target.trim() === '') {
+      throw new Error('动作配置缺少必需的目标');
+    }
+    if (config.type === 'call' && (!config.method || config.method.trim() === '')) {
+      throw new Error('调用动作缺少必需的方法名');
+    }
+    if (config.type === 'set' && config.value === undefined) {
+      throw new Error('设置动作缺少必需的值');
+    }
+  }
+
+  private static validateDecisionConfig(config: DecisionConfig): void {
+    if (!config.expression || config.expression.trim() === '') {
+      throw new Error('决策配置缺少必需的表达式');
+    }
+    if (!config.thenActions || config.thenActions.length === 0) {
+      throw new Error('决策配置缺少必需的 thenActions');
+    }
+  }
+
+  private static isConditionConfig(config: any): config is ConditionConfig {
+    return config && 
+           typeof config === 'object' &&
+           typeof config.field === 'string' &&
+           typeof config.operator === 'string' &&
+           'value' in config;
+  }
+
+  private static isActionConfig(config: any): config is ActionConfig {
+    return config && 
+           typeof config === 'object' &&
+           typeof config.type === 'string' &&
+           typeof config.target === 'string';
+  }
+
+  private static isGroupConfig(config: any): config is GroupConfig {
+    return config && 
+           typeof config === 'object' &&
+           typeof config.name === 'string';
+  }
+
+  private static isDecisionConfig(config: any): config is DecisionConfig {
+    return config && 
+           typeof config === 'object' &&
+           typeof config.expression === 'string' &&
+           Array.isArray(config.thenActions);
+  }
 
   constructor(packageName: string = 'com.rules') {
     this.packageName = packageName;
@@ -47,7 +161,8 @@ export class DroolsCompiler {
     visited: string[]
   ): void {
     if (visited.includes(node.id)) {
-      return;
+      const cyclePath = [...visited, node.id].join(' -> ');
+      throw new Error(`检测到循环依赖: ${cyclePath}`);
     }
     visited.push(node.id);
 
@@ -68,7 +183,7 @@ export class DroolsCompiler {
         break;
     }
 
-    const outgoingConnections = connections.filter(c => c.source === node.id);
+    const outgoingConnections = this.getOutgoingConnections(node.id, connections);
     outgoingConnections.forEach(conn => {
       const targetNode = nodeMap.get(conn.target);
       if (targetNode) {
@@ -79,6 +194,12 @@ export class DroolsCompiler {
     if (node.type === 'group') {
       this.currentGroupConfig = previousGroupConfig;
     }
+
+    visited.pop();
+  }
+
+  private getOutgoingConnections(nodeId: string, connections: Connection[]): Connection[] {
+    return connections.filter(c => c.source === nodeId);
   }
 
   private compileConditionNode(
@@ -87,7 +208,13 @@ export class DroolsCompiler {
     connections: Connection[],
     visited: string[]
   ): void {
-    const config = node.data.config as ConditionConfig;
+    if (!DroolsCompiler.isConditionConfig(node.data.config)) {
+      throw new Error(`节点 ${node.id} 的配置不是有效的条件配置`);
+    }
+    
+    const config = node.data.config;
+    DroolsCompiler.validateConditionConfig(config);
+    
     const ruleName = `Rule_${node.id}`;
 
     const whenClause = this.generateWhenClause(config);
@@ -104,10 +231,16 @@ export class DroolsCompiler {
   }
 
   private compileActionNode(node: RuleNode): void {
-    const config = node.data.config as ActionConfig;
+    if (!DroolsCompiler.isActionConfig(node.data.config)) {
+      throw new Error(`节点 ${node.id} 的配置不是有效的动作配置`);
+    }
+    
+    const config = node.data.config;
+    DroolsCompiler.validateActionConfig(config);
+    
     const ruleName = `Action_${node.id}`;
 
-    const thenClause = this.generateActionStatements(config);
+    const thenClause = [this.generateActionStatement(config)];
 
     const rule: DroolsRuleItem = {
       name: ruleName,
@@ -120,7 +253,11 @@ export class DroolsCompiler {
   }
 
   private compileGroupNode(node: RuleNode): void {
-    const config = node.data.config as GroupConfig;
+    if (!DroolsCompiler.isGroupConfig(node.data.config)) {
+      throw new Error(`节点 ${node.id} 的配置不是有效的分组配置`);
+    }
+    
+    const config = node.data.config;
     this.currentGroupConfig = config;
   }
 
@@ -141,13 +278,23 @@ export class DroolsCompiler {
   }
 
   private compileDecisionNode(node: RuleNode): void {
-    const config = node.data.config as DecisionConfig;
+    if (!DroolsCompiler.isDecisionConfig(node.data.config)) {
+      throw new Error(`节点 ${node.id} 的配置不是有效的决策配置`);
+    }
+    
+    const config = node.data.config;
+    DroolsCompiler.validateDecisionConfig(config);
+    
     const ruleName = `Decision_${node.id}`;
 
     const whenClause = [`eval(${config.expression})`];
-    const thenClause = config.thenActions.map(action => 
-      this.generateActionStatement(action)
-    );
+    const thenClause = config.thenActions.map(action => {
+      if (!DroolsCompiler.isActionConfig(action)) {
+        throw new Error(`决策节点 ${node.id} 的 thenActions 包含无效的动作配置`);
+      }
+      DroolsCompiler.validateActionConfig(action);
+      return this.generateActionStatement(action);
+    });
 
     const rule: DroolsRuleItem = {
       name: ruleName,
@@ -157,25 +304,34 @@ export class DroolsCompiler {
 
     this.applyGroupConfig(rule);
     this.rules.push(rule);
+
+    if (config.elseActions && config.elseActions.length > 0) {
+      const elseRuleName = `Decision_${node.id}_Else`;
+      const elseWhenClause = [`eval(!(${config.expression}))`];
+      const elseThenClause = config.elseActions.map(action => {
+        if (!DroolsCompiler.isActionConfig(action)) {
+          throw new Error(`决策节点 ${node.id} 的 elseActions 包含无效的动作配置`);
+        }
+        DroolsCompiler.validateActionConfig(action);
+        return this.generateActionStatement(action);
+      });
+
+      const elseRule: DroolsRuleItem = {
+        name: elseRuleName,
+        when: elseWhenClause,
+        then: elseThenClause
+      };
+
+      this.applyGroupConfig(elseRule);
+      this.rules.push(elseRule);
+    }
   }
 
   private generateWhenClause(config: ConditionConfig): string[] {
     const clauses: string[] = [];
-    
-    const operatorMap: Record<string, string> = {
-      '==': '==',
-      '!=': '!=',
-      'gt': '>',
-      'lt': '<',
-      'gte': '>=',
-      'lte': '<=',
-      'contains': 'contains',
-      'in': 'in',
-      'not in': 'not in'
-    };
 
-    const operator = operatorMap[config.operator] || config.operator;
-    const value = typeof config.value === 'string' ? `"${config.value}"` : config.value;
+    const operator = DroolsCompiler.OPERATOR_MAP[config.operator] || config.operator;
+    const value = DroolsCompiler.formatValueForDRL(config.value);
 
     clauses.push(`$fact: ${config.field} ${operator} ${value}`);
 
@@ -186,44 +342,45 @@ export class DroolsCompiler {
     node: RuleNode,
     nodeMap: Map<string, RuleNode>,
     connections: Connection[],
-    visited: string[]
+    _visited: string[]
   ): string[] {
     const statements: string[] = [];
-    
-    const outgoingConnections = connections.filter(c => c.source === node.id);
+
+    const outgoingConnections = this.getOutgoingConnections(node.id, connections);
     outgoingConnections.forEach(conn => {
       const targetNode = nodeMap.get(conn.target);
       if (targetNode && targetNode.type === 'action') {
-        const config = targetNode.data.config as ActionConfig;
-        statements.push(...this.generateActionStatements(config));
+        if (!DroolsCompiler.isActionConfig(targetNode.data.config)) {
+          throw new Error(`节点 ${targetNode.id} 的配置不是有效的动作配置`);
+        }
+        const config = targetNode.data.config;
+        statements.push(this.generateActionStatement(config));
       }
     });
 
     return statements;
   }
 
-  private generateActionStatements(config: ActionConfig): string[] {
-    const statements: string[] = [];
-    statements.push(this.generateActionStatement(config));
-    return statements;
-  }
-
   private generateActionStatement(config: ActionConfig): string {
     switch (config.type) {
       case 'set':
-        return `$fact.${config.target} = ${JSON.stringify(config.value)};`;
+        return `$fact.${config.target} = ${DroolsCompiler.formatValueForDRL(config.value)};`;
       case 'call':
         if (config.method && config.params) {
-          const params = config.params.map(p => JSON.stringify(p)).join(', ');
+          const params = config.params.map(p => DroolsCompiler.formatValueForDRL(p)).join(', ');
           return `$fact.${config.method}(${params});`;
         }
         return '';
       case 'insert':
+        if (config.params && config.params.length > 0) {
+          const params = config.params.map(p => DroolsCompiler.formatValueForDRL(p)).join(', ');
+          return `insert(new ${config.target}(${params}));`;
+        }
         return `insert(new ${config.target}());`;
       case 'retract':
         return `retract($fact);`;
       case 'modify':
-        return `modify($fact) { ${config.target} = ${JSON.stringify(config.value)} };`;
+        return `modify($fact) { ${config.target} = ${DroolsCompiler.formatValueForDRL(config.value)} };`;
       default:
         return '';
     }
@@ -255,6 +412,32 @@ export class DroolsCompiler {
     });
 
     return drl;
+  }
+
+  async exportToJar(config?: JarBuildConfig, filename?: string): Promise<void> {
+    const rule: DroolsRule = {
+      name: 'GeneratedRules',
+      packageName: this.packageName,
+      imports: Array.from(this.imports),
+      globals: Array.from(this.globals),
+      rules: this.rules
+    };
+
+    const builder = new DroolsJarBuilder(rule, config);
+    await builder.downloadJar(filename);
+  }
+
+  async buildJarBlob(config?: JarBuildConfig): Promise<Blob> {
+    const rule: DroolsRule = {
+      name: 'GeneratedRules',
+      packageName: this.packageName,
+      imports: Array.from(this.imports),
+      globals: Array.from(this.globals),
+      rules: this.rules
+    };
+
+    const builder = new DroolsJarBuilder(rule, config);
+    return await builder.buildJar();
   }
 
   private formatRule(rule: DroolsRuleItem): string {
@@ -293,4 +476,27 @@ export function compileToDRL(nodes: RuleNode[], connections: Connection[]): stri
   compiler.addImport('com.model.*');
   compiler.compile(nodes, connections);
   return compiler.toDRL();
+}
+
+export async function compileToJar(
+  nodes: RuleNode[],
+  connections: Connection[],
+  config?: JarBuildConfig,
+  filename?: string
+): Promise<void> {
+  const compiler = new DroolsCompiler();
+  compiler.addImport('com.model.*');
+  compiler.compile(nodes, connections);
+  await compiler.exportToJar(config, filename);
+}
+
+export async function compileToJarBlob(
+  nodes: RuleNode[],
+  connections: Connection[],
+  config?: JarBuildConfig
+): Promise<Blob> {
+  const compiler = new DroolsCompiler();
+  compiler.addImport('com.model.*');
+  compiler.compile(nodes, connections);
+  return await compiler.buildJarBlob(config);
 }

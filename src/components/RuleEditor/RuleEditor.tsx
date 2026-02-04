@@ -20,6 +20,7 @@ import { saveAs } from 'file-saver';
 import { NodePalette, NodeType } from '@/components/NodePalette/NodePalette';
 import { PropertyPanel } from '@/components/PropertyPanel/PropertyPanel';
 import { Toolbar } from '@/components/Toolbar/Toolbar';
+import { DroolsPreview } from '@/components/DroolsPreview/DroolsPreview';
 
 import { StartNode } from '@/components/custom-nodes/StartNode';
 import { EndNode } from '@/components/custom-nodes/EndNode';
@@ -29,7 +30,7 @@ import { DecisionNode } from '@/components/custom-nodes/DecisionNode';
 import { GroupNode } from '@/components/custom-nodes/GroupNode';
 
 import { generateNodeId, validateConnection, downloadFile } from '@/utils/helpers';
-import { compileToDRL } from '@/engines/DroolsCompiler';
+import { compileToDRL, compileToJar } from '@/engines/DroolsCompiler';
 import { RuleNode } from '@/types/rule.types';
 import { Modal, Input, message } from 'antd';
 
@@ -133,7 +134,14 @@ export const RuleEditor: React.FC = () => {
     }
 
     try {
-      const drl = compileToDRL(nodes as RuleNode[], edges);
+      const connections = edges.map(e => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceHandle: e.sourceHandle || undefined,
+        targetHandle: e.targetHandle || undefined
+      }));
+      const drl = compileToDRL(nodes as RuleNode[], connections);
       setCompiledDRL(drl);
       message.success('编译成功');
     } catch (error) {
@@ -157,7 +165,14 @@ export const RuleEditor: React.FC = () => {
     }
 
     try {
-      const drl = compiledDRL || compileToDRL(nodes as RuleNode[], edges);
+      const connections = edges.map(e => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceHandle: e.sourceHandle || undefined,
+        targetHandle: e.targetHandle || undefined
+      }));
+      const drl = compiledDRL || compileToDRL(nodes as RuleNode[], connections);
       
       const zip = new JSZip();
       
@@ -209,6 +224,37 @@ export const RuleEditor: React.FC = () => {
       message.error('下载失败: ' + (error as Error).message);
     }
   }, [nodes, edges, compiledDRL, ruleName]);
+
+  const onDownloadJar = useCallback(async () => {
+    if (nodes.length === 0) {
+      message.warning('请先添加节点');
+      return;
+    }
+
+    try {
+      message.loading({ content: '正在生成 JAR 文件...', key: 'jarDownload' });
+      
+      const connections = edges.map(e => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceHandle: e.sourceHandle || undefined,
+        targetHandle: e.targetHandle || undefined
+      }));
+      
+      const filename = `${ruleName}-1.0.0.jar`;
+      await compileToJar(nodes as RuleNode[], connections, {
+        version: '1.0.0',
+        vendor: 'Web Rules',
+        description: `Generated Drools Rules - ${ruleName}`,
+        includeKModule: true
+      }, filename);
+      
+      message.success({ content: 'JAR 文件下载成功', key: 'jarDownload' });
+    } catch (error) {
+      message.error({ content: 'JAR 文件生成失败: ' + (error as Error).message, key: 'jarDownload' });
+    }
+  }, [nodes, edges, ruleName]);
 
   const onSave = useCallback(() => {
     setSaveModalVisible(true);
@@ -263,6 +309,7 @@ export const RuleEditor: React.FC = () => {
         onPreview={onPreview}
         onCompile={onCompile}
         onDownload={onDownload}
+        onDownloadJar={onDownloadJar}
         onSave={onSave}
         onClear={onClear}
         onZoomIn={onZoomIn}
@@ -320,24 +367,13 @@ export const RuleEditor: React.FC = () => {
         </div>
       </div>
 
-      <Modal
-        title="预览Drools规则"
-        open={previewVisible}
-        onCancel={() => setPreviewVisible(false)}
-        footer={null}
-        width={800}
-      >
-        <pre style={{
-          backgroundColor: '#f5f5f5',
-          padding: 16,
-          borderRadius: 4,
-          overflow: 'auto',
-          maxHeight: 500,
-          fontSize: 12
-        }}>
-          {compiledDRL}
-        </pre>
-      </Modal>
+      <DroolsPreview
+        visible={previewVisible}
+        drlCode={compiledDRL}
+        onClose={() => setPreviewVisible(false)}
+        nodesCount={nodes.length}
+        edgesCount={edges.length}
+      />
 
       <Modal
         title="保存配置"

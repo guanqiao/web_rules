@@ -4,7 +4,7 @@ import { Card } from 'antd';
 import { BranchesOutlined } from '@ant-design/icons';
 
 export const DecisionNode: React.FC<NodeProps> = ({ data, selected }) => {
-  const config = data.config || {};
+  const config = data.config || {} as any;
   
   return (
     <Card
@@ -19,14 +19,14 @@ export const DecisionNode: React.FC<NodeProps> = ({ data, selected }) => {
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <BranchesOutlined style={{ color: '#722ed1', fontSize: 16 }} />
-          <span style={{ fontWeight: 600, fontSize: 13 }}>{data.label}</span>
+          <span style={{ fontWeight: 600, fontSize: 13 }}>{String(data.label)}</span>
         </div>
       }
     >
       <div style={{ fontSize: 11, color: '#666' }}>
         {config.expression && (
           <div style={{ marginBottom: 4 }}>
-            <strong>表达式:</strong> {config.expression}
+            <strong>表达式:</strong> {String(config.expression)}
           </div>
         )}
         {config.thenActions && config.thenActions.length > 0 && (

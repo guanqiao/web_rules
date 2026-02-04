@@ -34,7 +34,7 @@ export default {
     config: 'Config',
     settings: 'Settings',
     help: 'Help',
-    about: 'About'
+    about: 'About',
     smartConnect: {
       suggestions: 'Suggestions for connection:',
       forCondition: 'Used to add judgment logic',

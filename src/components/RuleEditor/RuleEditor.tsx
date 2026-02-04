@@ -495,18 +495,28 @@ export const RuleEditor: React.FC = () => {
     const offsetX = 50;
     const offsetY = 50;
     
-    const newNodes = template.nodes.map((node: any) => ({
-      ...node,
-      id: generateNodeId(),
-      position: {
-        x: node.position.x + offsetX,
-        y: node.position.y + offsetY
-      }
-    }));
+    // 创建旧节点ID到新节点ID的映射
+    const nodeIdMap: Record<string, string> = {};
+    
+    const newNodes = template.nodes.map((node: any) => {
+      const newId = generateNodeId();
+      nodeIdMap[node.id] = newId;
+      return {
+        ...node,
+        id: newId,
+        position: {
+          x: node.position.x + offsetX,
+          y: node.position.y + offsetY
+        }
+      };
+    });
     
     const newEdges = template.edges.map((edge: any) => ({
       ...edge,
-      id: `edge-${Date.now()}-${Math.random()}`
+      id: `edge-${Date.now()}-${Math.random()}`,
+      // 更新连线的source和target为新的节点ID
+      source: nodeIdMap[edge.source],
+      target: nodeIdMap[edge.target]
     }));
     
     setNodes(newNodes);

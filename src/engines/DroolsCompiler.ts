@@ -1,25 +1,22 @@
-import { DroolsRule, DroolsRuleItem, RuleNode, Connection, ConditionConfig, ActionConfig } from '@/types/rule.types';
+import { DroolsRule, DroolsRuleItem, RuleNode, Connection, ConditionConfig, ActionConfig, GroupConfig, DecisionConfig } from '@/types/rule.types';
 
 export class DroolsCompiler {
   private packageName: string = 'com.rules';
-  private imports: string[] = [];
-  private globals: string[] = [];
+  private imports: Set<string> = new Set();
+  private globals: Set<string> = new Set();
   private rules: DroolsRuleItem[] = [];
+  private currentGroupConfig: GroupConfig | null = null;
 
   constructor(packageName: string = 'com.rules') {
     this.packageName = packageName;
   }
 
   addImport(importStatement: string): void {
-    if (!this.imports.includes(importStatement)) {
-      this.imports.push(importStatement);
-    }
+    this.imports.add(importStatement);
   }
 
   addGlobal(globalStatement: string): void {
-    if (!this.globals.includes(globalStatement)) {
-      this.globals.push(globalStatement);
-    }
+    this.globals.add(globalStatement);
   }
 
   compile(nodes: RuleNode[], connections: Connection[]): DroolsRule {
@@ -37,8 +34,8 @@ export class DroolsCompiler {
     return {
       name: 'GeneratedRules',
       packageName: this.packageName,
-      imports: this.imports,
-      globals: this.globals,
+      imports: Array.from(this.imports),
+      globals: Array.from(this.globals),
       rules: this.rules
     };
   }
@@ -53,6 +50,8 @@ export class DroolsCompiler {
       return;
     }
     visited.push(node.id);
+
+    const previousGroupConfig = this.currentGroupConfig;
 
     switch (node.type) {
       case 'condition':
@@ -76,6 +75,10 @@ export class DroolsCompiler {
         this.processNode(targetNode, nodeMap, connections, visited);
       }
     });
+
+    if (node.type === 'group') {
+      this.currentGroupConfig = previousGroupConfig;
+    }
   }
 
   private compileConditionNode(
@@ -96,6 +99,7 @@ export class DroolsCompiler {
       then: thenClause
     };
 
+    this.applyGroupConfig(rule);
     this.rules.push(rule);
   }
 
@@ -111,23 +115,29 @@ export class DroolsCompiler {
       then: thenClause
     };
 
+    this.applyGroupConfig(rule);
     this.rules.push(rule);
   }
 
   private compileGroupNode(node: RuleNode): void {
     const config = node.data.config as GroupConfig;
-    
-    this.rules.forEach(rule => {
-      if (config.agendaGroup) {
-        rule.agendaGroup = config.agendaGroup;
-      }
-      if (config.activationGroup) {
-        rule.activationGroup = config.activationGroup;
-      }
-      if (config.salience !== undefined) {
-        rule.salience = config.salience;
-      }
-    });
+    this.currentGroupConfig = config;
+  }
+
+  private applyGroupConfig(rule: DroolsRuleItem): void {
+    if (!this.currentGroupConfig) {
+      return;
+    }
+
+    if (this.currentGroupConfig.agendaGroup) {
+      rule.agendaGroup = this.currentGroupConfig.agendaGroup;
+    }
+    if (this.currentGroupConfig.activationGroup) {
+      rule.activationGroup = this.currentGroupConfig.activationGroup;
+    }
+    if (this.currentGroupConfig.salience !== undefined) {
+      rule.salience = this.currentGroupConfig.salience;
+    }
   }
 
   private compileDecisionNode(node: RuleNode): void {
@@ -145,6 +155,7 @@ export class DroolsCompiler {
       then: thenClause
     };
 
+    this.applyGroupConfig(rule);
     this.rules.push(rule);
   }
 
@@ -221,7 +232,7 @@ export class DroolsCompiler {
   toDRL(): string {
     let drl = `package ${this.packageName};\n\n`;
     
-    if (this.imports.length > 0) {
+    if (this.imports.size > 0) {
       drl += '// Imports\n';
       this.imports.forEach(imp => {
         drl += `import ${imp};\n`;
@@ -229,7 +240,7 @@ export class DroolsCompiler {
       drl += '\n';
     }
 
-    if (this.globals.length > 0) {
+    if (this.globals.size > 0) {
       drl += '// Globals\n';
       this.globals.forEach(global => {
         drl += `global ${global};\n`;

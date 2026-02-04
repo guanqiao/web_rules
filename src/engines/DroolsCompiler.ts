@@ -142,6 +142,7 @@ export class DroolsCompiler {
     const startNodes = nodes.filter(n => n.type === 'start');
     
     startNodes.forEach(startNode => {
+      this.currentGroupConfig = null;
       this.processNode(startNode, nodeMap, connections, []);
     });
 

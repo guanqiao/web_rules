@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Space, Typography, Card, Statistic, Row, Col, message } from 'antd';
 import { CopyOutlined, CheckOutlined, FileTextOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const { Text, Paragraph } = Typography;
 
@@ -19,6 +20,7 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
   nodesCount,
   edgesCount
 }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [stats, setStats] = useState({
     package: '',
@@ -49,10 +51,10 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
     try {
       await navigator.clipboard.writeText(drlCode);
       setCopied(true);
-      message.success('已复制到剪贴板');
+      message.success(t('preview.copySuccess'));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      message.error('复制失败');
+      message.error(t('preview.copyFailed'));
     }
   };
 
@@ -75,7 +77,7 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
       title={
         <Space>
           <FileTextOutlined />
-          <span>Drools规则预览</span>
+          <span>{t('preview.title')}</span>
         </Space>
       }
       open={visible}
@@ -83,13 +85,13 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
       width={900}
       footer={
         <Space>
-          <Button onClick={onClose}>关闭</Button>
+          <Button onClick={onClose}>{t('common.close')}</Button>
           <Button 
             type="primary" 
             icon={copied ? <CheckOutlined /> : <CopyOutlined />}
             onClick={handleCopy}
           >
-            {copied ? '已复制' : '复制代码'}
+            {copied ? t('preview.copied') : t('preview.copyCode')}
           </Button>
         </Space>
       }
@@ -99,28 +101,28 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
           <Row gutter={16}>
             <Col span={6}>
               <Statistic
-                title="规则包"
+                title={t('preview.stats.package')}
                 value={stats.package || 'N/A'}
                 valueStyle={{ fontSize: 14, color: '#1890ff' }}
               />
             </Col>
             <Col span={6}>
               <Statistic
-                title="规则数量"
+                title={t('preview.stats.rules')}
                 value={stats.rules}
                 valueStyle={{ fontSize: 14, color: '#52c41a' }}
               />
             </Col>
             <Col span={6}>
               <Statistic
-                title="导入数量"
+                title={t('preview.stats.imports')}
                 value={stats.imports}
                 valueStyle={{ fontSize: 14, color: '#faad14' }}
               />
             </Col>
             <Col span={6}>
               <Statistic
-                title="代码行数"
+                title={t('preview.stats.lines')}
                 value={stats.lines}
                 valueStyle={{ fontSize: 14, color: '#722ed1' }}
               />
@@ -131,11 +133,11 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
 
       <Card 
         size="small" 
-        title="代码预览"
+        title={t('preview.codePreview')}
         extra={
           <Space size="small">
-            <Text type="secondary">节点: {nodesCount}</Text>
-            <Text type="secondary">连线: {edgesCount}</Text>
+            <Text type="secondary">{t('preview.nodes')}: {nodesCount}</Text>
+            <Text type="secondary">{t('preview.edges')}: {edgesCount}</Text>
           </Space>
         }
       >
@@ -159,8 +161,8 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
 
       <div style={{ marginTop: 16 }}>
         <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
-          <Text strong>提示：</Text>
-          生成的Drools规则文件可以直接用于Drools规则引擎。请确保已正确配置相关的Java类和依赖项。
+          <Text strong>{t('common.tip')}：</Text>
+          {t('preview.tip')}
         </Paragraph>
       </div>
     </Modal>

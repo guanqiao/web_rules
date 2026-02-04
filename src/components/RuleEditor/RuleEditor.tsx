@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -33,6 +33,9 @@ import { generateNodeId, validateConnection, downloadFile } from '@/utils/helper
 import { compileToDRL, compileToJar } from '@/engines/DroolsCompiler';
 import { RuleNode } from '@/types/rule.types';
 import { Modal, Input, message } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { useEditorStore } from '@/stores/useEditorStore';
+import { autoSaveManager } from '@/utils/autoSave';
 
 const nodeTypes = {
   start: StartNode,
@@ -47,6 +50,7 @@ const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
 
 export const RuleEditor: React.FC = () => {
+  const { t } = useTranslation();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -54,18 +58,54 @@ export const RuleEditor: React.FC = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [saveModalVisible, setSaveModalVisible] = useState(false);
   const [ruleName, setRuleName] = useState('my-rules');
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('unsaved');
+  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+
+  const canUndo = useEditorStore((state) => state.canUndo());
+  const canRedo = useEditorStore((state) => state.canRedo());
+  const undo = useEditorStore((state) => state.undo);
+  const redo = useEditorStore((state) => state.redo);
+
+  useEffect(() => {
+    const savedData = autoSaveManager.loadFromStorage();
+    if (savedData) {
+      setNodes(savedData.nodes);
+      setEdges(savedData.edges);
+      setSaveStatus('saved');
+      setLastSavedTime(new Date(savedData.metadata.savedAt));
+    }
+
+    autoSaveManager.startAutoSave(
+      () => nodes,
+      () => edges,
+      () => {
+        setSaveStatus('saved');
+        setLastSavedTime(new Date());
+      }
+    );
+
+    return () => {
+      autoSaveManager.stopAutoSave();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (nodes.length > 0 || edges.length > 0) {
+      setSaveStatus('unsaved');
+    }
+  }, [nodes, edges]);
 
   const onConnect = useCallback(
     (params: Connection) => {
       if (validateConnection(params.source!, params.target!, edges)) {
         setEdges((eds) => addEdge(params, eds));
       } else {
-        message.warning('连接已存在或无效');
+        message.warning(t('editor.validation.invalidConnection'));
       }
     },
-    [edges, setEdges]
+    [edges, setEdges, t]
   );
 
   const onDragStart = useCallback((event: React.DragEvent, nodeType: NodeType) => {
@@ -129,7 +169,7 @@ export const RuleEditor: React.FC = () => {
 
   const onCompile = useCallback(() => {
     if (nodes.length === 0) {
-      message.warning('请先添加节点');
+      message.warning(t('editor.validation.emptyNodes'));
       return;
     }
 
@@ -143,24 +183,24 @@ export const RuleEditor: React.FC = () => {
       }));
       const drl = compileToDRL(nodes as RuleNode[], connections);
       setCompiledDRL(drl);
-      message.success('编译成功');
+      message.success(t('editor.validation.compileSuccess'));
     } catch (error) {
-      message.error('编译失败: ' + (error as Error).message);
+      message.error(t('editor.validation.compileFailed', { error: (error as Error).message }));
     }
-  }, [nodes, edges]);
+  }, [nodes, edges, t]);
 
   const onPreview = useCallback(() => {
     if (nodes.length === 0) {
-      message.warning('请先添加节点');
+      message.warning(t('editor.validation.emptyNodes'));
       return;
     }
     onCompile();
     setPreviewVisible(true);
-  }, [nodes, onCompile]);
+  }, [nodes, onCompile, t]);
 
   const onDownload = useCallback(async () => {
     if (nodes.length === 0) {
-      message.warning('请先添加节点');
+      message.warning(t('editor.validation.emptyNodes'));
       return;
     }
 
@@ -219,20 +259,20 @@ export const RuleEditor: React.FC = () => {
       const content = await zip.generateAsync({ type: 'blob' });
       saveAs(content, `${ruleName}-drools-package.zip`);
       
-      message.success('下载成功');
+      message.success(t('editor.validation.downloadSuccess'));
     } catch (error) {
-      message.error('下载失败: ' + (error as Error).message);
+      message.error(t('editor.validation.downloadFailed', { error: (error as Error).message }));
     }
-  }, [nodes, edges, compiledDRL, ruleName]);
+  }, [nodes, edges, compiledDRL, ruleName, t]);
 
   const onDownloadJar = useCallback(async () => {
     if (nodes.length === 0) {
-      message.warning('请先添加节点');
+      message.warning(t('editor.validation.emptyNodes'));
       return;
     }
 
     try {
-      message.loading({ content: '正在生成 JAR 文件...', key: 'jarDownload' });
+      message.loading({ content: t('toolbar.saving'), key: 'jarDownload' });
       
       const connections = edges.map(e => ({
         id: e.id,
@@ -250,11 +290,11 @@ export const RuleEditor: React.FC = () => {
         includeKModule: true
       }, filename);
       
-      message.success({ content: 'JAR 文件下载成功', key: 'jarDownload' });
+      message.success({ content: t('editor.validation.downloadSuccess'), key: 'jarDownload' });
     } catch (error) {
-      message.error({ content: 'JAR 文件生成失败: ' + (error as Error).message, key: 'jarDownload' });
+      message.error({ content: t('editor.validation.downloadFailed', { error: (error as Error).message }), key: 'jarDownload' });
     }
-  }, [nodes, edges, ruleName]);
+  }, [nodes, edges, ruleName, t]);
 
   const onSave = useCallback(() => {
     setSaveModalVisible(true);
@@ -273,14 +313,17 @@ export const RuleEditor: React.FC = () => {
     
     downloadFile(config, `${ruleName}.json`, 'application/json');
     setSaveModalVisible(false);
-    message.success('保存成功');
-  }, [nodes, edges, ruleName]);
+    setSaveStatus('saved');
+    setLastSavedTime(new Date());
+    message.success(t('messages.saveSuccess'));
+  }, [nodes, edges, ruleName, t]);
 
   const onClear = useCallback(() => {
     setNodes([]);
     setEdges([]);
     setSelectedNode(null);
     setCompiledDRL('');
+    setSaveStatus('unsaved');
   }, [setNodes, setEdges]);
 
   const onZoomIn = useCallback(() => {
@@ -316,6 +359,12 @@ export const RuleEditor: React.FC = () => {
         onZoomOut={onZoomOut}
         onFitView={onFitView}
         canCompile={canCompile}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={undo}
+        onRedo={redo}
+        saveStatus={saveStatus}
+        lastSavedTime={lastSavedTime}
       />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -376,13 +425,13 @@ export const RuleEditor: React.FC = () => {
       />
 
       <Modal
-        title="保存配置"
+        title={t('toolbar.save')}
         open={saveModalVisible}
         onOk={handleSave}
         onCancel={() => setSaveModalVisible(false)}
       >
         <Input
-          placeholder="输入规则名称"
+          placeholder={t('propertyPanel.nodeNamePlaceholder')}
           value={ruleName}
           onChange={(e) => setRuleName(e.target.value)}
         />

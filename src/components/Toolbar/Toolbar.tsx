@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Button, Tooltip, Modal, message } from 'antd';
+import { Space, Button, Tooltip, Modal, message, Badge, Tag } from 'antd';
 import {
   CodeOutlined,
   DownloadOutlined,
@@ -9,8 +9,13 @@ import {
   ZoomInOutlined,
   ZoomOutOutlined,
   FullscreenOutlined,
-  FileZipOutlined
+  FileZipOutlined,
+  UndoOutlined,
+  RedoOutlined,
+  ClockCircleOutlined
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
+import { LanguageSelector } from '@/components/LanguageSelector/LanguageSelector';
 
 export interface ToolbarProps {
   onPreview: () => void;
@@ -23,6 +28,12 @@ export interface ToolbarProps {
   onZoomOut: () => void;
   onFitView: () => void;
   canCompile: boolean;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  saveStatus?: 'saved' | 'unsaved' | 'saving';
+  lastSavedTime?: Date | null;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -35,19 +46,51 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onZoomIn,
   onZoomOut,
   onFitView,
-  canCompile
+  canCompile,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
+  saveStatus = 'unsaved',
+  lastSavedTime
 }) => {
+  const { t } = useTranslation();
+
   const handleClear = () => {
     Modal.confirm({
-      title: '确认清空',
-      content: '确定要清空所有节点和连线吗？此操作不可恢复。',
-      okText: '确定',
-      cancelText: '取消',
+      title: t('toolbar.clearConfirm'),
+      content: t('toolbar.clearConfirmContent'),
+      okText: t('toolbar.clearConfirmOk'),
+      cancelText: t('toolbar.clearConfirmCancel'),
       onOk: () => {
         onClear();
-        message.success('已清空画布');
+        message.success(t('toolbar.cleared'));
       }
     });
+  };
+
+  const getSaveStatusTag = () => {
+    switch (saveStatus) {
+      case 'saved':
+        return <Tag color="success">{t('toolbar.saved')}</Tag>;
+      case 'saving':
+        return <Tag color="processing">{t('toolbar.saving')}</Tag>;
+      default:
+        return <Tag color="warning">{t('toolbar.unsaved')}</Tag>;
+    }
+  };
+
+  const formatLastSavedTime = () => {
+    if (!lastSavedTime) return null;
+    const now = new Date();
+    const diff = now.getTime() - lastSavedTime.getTime();
+    const minutes = Math.floor(diff / 60000);
+    
+    if (minutes < 1) return t('toolbar.lastSaved', { time: '刚刚' });
+    if (minutes < 60) return t('toolbar.lastSaved', { time: `${minutes}分钟前` });
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t('toolbar.lastSaved', { time: `${hours}小时前` });
+    return t('toolbar.lastSaved', { time: lastSavedTime.toLocaleDateString() });
   };
 
   return (
@@ -59,87 +102,113 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       justifyContent: 'space-between',
       alignItems: 'center'
     }}>
-      <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
-          业务规则配置系统
+          {t('toolbar.title')}
         </h2>
+        <Space size="small">
+          {getSaveStatusTag()}
+          {formatLastSavedTime() && (
+            <span style={{ fontSize: 12, color: '#999' }}>
+              <ClockCircleOutlined /> {formatLastSavedTime()}
+            </span>
+          )}
+        </Space>
       </div>
 
       <Space size="small">
-        <Tooltip title="预览">
+        <Tooltip title={t('toolbar.undo')}>
+          <Button 
+            icon={<UndoOutlined />} 
+            onClick={onUndo}
+            disabled={!canUndo}
+          />
+        </Tooltip>
+
+        <Tooltip title={t('toolbar.redo')}>
+          <Button 
+            icon={<RedoOutlined />} 
+            onClick={onRedo}
+            disabled={!canRedo}
+          />
+        </Tooltip>
+
+        <Tooltip title={t('toolbar.preview')}>
           <Button 
             icon={<EyeOutlined />} 
             onClick={onPreview}
           >
-            预览
+            {t('toolbar.preview')}
           </Button>
         </Tooltip>
 
-        <Tooltip title="编译规则">
+        <Tooltip title={t('toolbar.compile')}>
           <Button 
             type="primary"
             icon={<CodeOutlined />} 
             onClick={onCompile}
             disabled={!canCompile}
           >
-            编译
+            {t('toolbar.compile')}
           </Button>
         </Tooltip>
 
-        <Tooltip title="下载规则包">
+        <Tooltip title={t('toolbar.download')}>
           <Button 
             icon={<DownloadOutlined />} 
             onClick={onDownload}
             disabled={!canCompile}
           >
-            下载
+            {t('toolbar.download')}
           </Button>
         </Tooltip>
 
-        <Tooltip title="下载 JAR 包">
+        <Tooltip title={t('toolbar.downloadJar')}>
           <Button 
             icon={<FileZipOutlined />} 
             onClick={onDownloadJar}
             disabled={!canCompile}
           >
-            下载 JAR
+            {t('toolbar.downloadJar')}
           </Button>
         </Tooltip>
 
-        <Tooltip title="保存配置">
+        <Tooltip title={t('toolbar.save')}>
           <Button 
             icon={<SaveOutlined />} 
             onClick={onSave}
           >
-            保存
+            {t('toolbar.save')}
           </Button>
         </Tooltip>
 
-        <Tooltip title="清空画布">
+        <Tooltip title={t('toolbar.clear')}>
           <Button 
             danger
             icon={<ClearOutlined />} 
             onClick={handleClear}
           >
-            清空
+            {t('toolbar.clear')}
           </Button>
         </Tooltip>
       </Space>
 
       <Space size="small">
-        <Tooltip title="放大">
+        <LanguageSelector />
+
+        <Tooltip title={t('toolbar.zoomIn')}>
           <Button 
             icon={<ZoomInOutlined />} 
             onClick={onZoomIn}
           />
         </Tooltip>
-        <Tooltip title="缩小">
+        <Tooltip title={t('toolbar.zoomOut')}>
           <Button 
             icon={<ZoomOutOutlined />} 
             onClick={onZoomOut}
           />
         </Tooltip>
-        <Tooltip title="适应视图">
+        <Tooltip title={t('toolbar.fitView')}>
           <Button 
             icon={<FullscreenOutlined />} 
             onClick={onFitView}

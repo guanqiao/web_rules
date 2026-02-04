@@ -1,8 +1,10 @@
 import React from 'react';
-import { Card, Form, Input, Select, InputNumber, Button, Divider } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Select, InputNumber, Button, Divider, Space } from 'antd';
+import { DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const { Option } = Select;
+const { TextArea } = Input;
 
 export interface PropertyPanelProps {
   selectedNode: any;
@@ -15,6 +17,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   onUpdateNode,
   onDeleteNode
 }) => {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
 
   const handleValuesChange = (_changedValues: any, allValues: any) => {
@@ -36,7 +39,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
     return (
       <div style={{ padding: 16, height: '100%' }}>
         <Card style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: '#999' }}>请选择一个节点以编辑属性</span>
+          <span style={{ color: '#999' }}>{t('propertyPanel.selectNode')}</span>
         </Card>
       </div>
     );
@@ -48,7 +51,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   return (
     <div style={{ padding: 16, height: '100%', overflowY: 'auto' }}>
       <Card
-        title="属性配置"
+        title={t('propertyPanel.title')}
         size="small"
         extra={
           <Button 
@@ -57,7 +60,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
             icon={<DeleteOutlined />}
             onClick={handleDelete}
           >
-            删除
+            {t('propertyPanel.delete')}
           </Button>
         }
       >
@@ -68,37 +71,57 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
           onValuesChange={handleValuesChange}
           size="small"
         >
-          <Form.Item label="节点名称" name="label">
-            <Input placeholder="输入节点名称" />
+          <Form.Item 
+            label={t('propertyPanel.nodeName')} 
+            name="label"
+            rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+          >
+            <Input placeholder={t('propertyPanel.nodeNamePlaceholder')} />
           </Form.Item>
 
           <Divider />
 
           {nodeType === 'condition' && (
             <>
-              <Form.Item label="字段" name="field">
-                <Input placeholder="例如: $fact.age" />
+              <Form.Item 
+                label={t('propertyPanel.condition.field')} 
+                name="field"
+                rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+                extra={<InfoCircleOutlined style={{ color: '#1890ff' }} />}
+              >
+                <Input placeholder={t('propertyPanel.condition.fieldPlaceholder')} />
               </Form.Item>
-              <Form.Item label="操作符" name="operator">
-                <Select placeholder="选择操作符">
-                  <Option value="==">等于</Option>
-                  <Option value="!=">不等于</Option>
-                  <Option value="gt">大于</Option>
-                  <Option value="lt">小于</Option>
-                  <Option value="gte">大于等于</Option>
-                  <Option value="lte">小于等于</Option>
-                  <Option value="contains">包含</Option>
-                  <Option value="in">在...中</Option>
-                  <Option value="not in">不在...中</Option>
+              <Form.Item 
+                label={t('propertyPanel.condition.operator')} 
+                name="operator"
+                rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+              >
+                <Select placeholder={t('propertyPanel.condition.operatorPlaceholder')}>
+                  <Option value="==">{t('propertyPanel.condition.operators.eq')}</Option>
+                  <Option value="!=">{t('propertyPanel.condition.operators.neq')}</Option>
+                  <Option value="gt">{t('propertyPanel.condition.operators.gt')}</Option>
+                  <Option value="lt">{t('propertyPanel.condition.operators.lt')}</Option>
+                  <Option value="gte">{t('propertyPanel.condition.operators.gte')}</Option>
+                  <Option value="lte">{t('propertyPanel.condition.operators.lte')}</Option>
+                  <Option value="contains">{t('propertyPanel.condition.operators.contains')}</Option>
+                  <Option value="in">{t('propertyPanel.condition.operators.in')}</Option>
+                  <Option value="not in">{t('propertyPanel.condition.operators.notIn')}</Option>
                 </Select>
               </Form.Item>
-              <Form.Item label="值" name="value">
-                <Input placeholder="输入值" />
+              <Form.Item 
+                label={t('propertyPanel.condition.value')} 
+                name="value"
+                rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+              >
+                <Input placeholder={t('propertyPanel.condition.valuePlaceholder')} />
               </Form.Item>
-              <Form.Item label="逻辑操作符" name="logicalOperator">
-                <Select placeholder="选择逻辑操作符">
-                  <Option value="AND">AND</Option>
-                  <Option value="OR">OR</Option>
+              <Form.Item 
+                label={t('propertyPanel.condition.logicalOperator')} 
+                name="logicalOperator"
+              >
+                <Select placeholder={t('propertyPanel.condition.logicalOperatorPlaceholder')}>
+                  <Option value="AND">{t('propertyPanel.condition.logicalOperators.and')}</Option>
+                  <Option value="OR">{t('propertyPanel.condition.logicalOperators.or')}</Option>
                 </Select>
               </Form.Item>
             </>
@@ -106,33 +129,45 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 
           {nodeType === 'action' && (
             <>
-              <Form.Item label="动作类型" name="type">
-                <Select placeholder="选择动作类型">
-                  <Option value="set">设置值</Option>
-                  <Option value="call">调用方法</Option>
-                  <Option value="insert">插入事实</Option>
-                  <Option value="retract">撤回事实</Option>
-                  <Option value="modify">修改事实</Option>
+              <Form.Item 
+                label={t('propertyPanel.action.type')} 
+                name="type"
+                rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+              >
+                <Select placeholder={t('propertyPanel.action.typePlaceholder')}>
+                  <Option value="set">{t('propertyPanel.action.types.set')}</Option>
+                  <Option value="call">{t('propertyPanel.action.types.call')}</Option>
+                  <Option value="insert">{t('propertyPanel.action.types.insert')}</Option>
+                  <Option value="retract">{t('propertyPanel.action.types.retract')}</Option>
+                  <Option value="modify">{t('propertyPanel.action.types.modify')}</Option>
                 </Select>
               </Form.Item>
-              <Form.Item label="目标" name="target">
-                <Input placeholder="例如: fieldName 或 className" />
+              <Form.Item 
+                label={t('propertyPanel.action.target')} 
+                name="target"
+                rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+              >
+                <Input placeholder={t('propertyPanel.action.targetPlaceholder')} />
               </Form.Item>
-              <Form.Item label="值" name="value">
-                <Input placeholder="输入值" />
+              <Form.Item label={t('propertyPanel.action.value')} name="value">
+                <Input placeholder={t('propertyPanel.action.valuePlaceholder')} />
               </Form.Item>
-              <Form.Item label="方法名" name="method">
-                <Input placeholder="输入方法名" />
+              <Form.Item label={t('propertyPanel.action.method')} name="method">
+                <Input placeholder={t('propertyPanel.action.methodPlaceholder')} />
               </Form.Item>
             </>
           )}
 
           {nodeType === 'decision' && (
             <>
-              <Form.Item label="表达式" name="expression">
-                <Input.TextArea 
+              <Form.Item 
+                label={t('propertyPanel.decision.expression')} 
+                name="expression"
+                rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+              >
+                <TextArea 
                   rows={3} 
-                  placeholder="例如: $fact.age > 18 && $fact.hasLicense" 
+                  placeholder={t('propertyPanel.decision.expressionPlaceholder')} 
                 />
               </Form.Item>
             </>
@@ -140,32 +175,41 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 
           {nodeType === 'group' && (
             <>
-              <Form.Item label="分组名称" name="name">
-                <Input placeholder="输入分组名称" />
+              <Form.Item 
+                label={t('propertyPanel.group.name')} 
+                name="name"
+                rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+              >
+                <Input placeholder={t('propertyPanel.group.namePlaceholder')} />
               </Form.Item>
-              <Form.Item label="优先级" name="salience">
+              <Form.Item 
+                label={t('propertyPanel.group.priority')} 
+                name="salience"
+              >
                 <InputNumber 
                   min={0} 
                   max={65535} 
                   style={{ width: '100%' }} 
-                  placeholder="输入优先级"
+                  placeholder={t('propertyPanel.group.priorityPlaceholder')}
                 />
               </Form.Item>
-              <Form.Item label="议程组" name="agendaGroup">
-                <Input placeholder="输入议程组名称" />
+              <Form.Item label={t('propertyPanel.group.agendaGroup')} name="agendaGroup">
+                <Input placeholder={t('propertyPanel.group.agendaGroupPlaceholder')} />
               </Form.Item>
-              <Form.Item label="激活组" name="activationGroup">
-                <Input placeholder="输入激活组名称" />
+              <Form.Item label={t('propertyPanel.group.activationGroup')} name="activationGroup">
+                <Input placeholder={t('propertyPanel.group.activationGroupPlaceholder')} />
               </Form.Item>
             </>
           )}
 
           <Divider />
 
-          <div style={{ fontSize: 12, color: '#999' }}>
-            <div>节点ID: {selectedNode.id}</div>
-            <div>节点类型: {nodeType}</div>
-          </div>
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <div style={{ fontSize: 12, color: '#999' }}>
+              <div>{t('propertyPanel.nodeId')}: {selectedNode.id}</div>
+              <div>{t('propertyPanel.nodeType')}: {nodeType}</div>
+            </div>
+          </Space>
         </Form>
       </Card>
     </div>

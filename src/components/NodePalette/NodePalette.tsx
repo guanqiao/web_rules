@@ -8,6 +8,7 @@ import {
   BranchesOutlined,
   FolderOutlined
 } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const { Text } = Typography;
 
@@ -19,60 +20,58 @@ export interface NodeType {
   bgColor: string;
 }
 
-const nodeTypes: NodeType[] = [
-  {
-    type: 'start',
-    label: '开始',
-    icon: <PlayCircleOutlined />,
-    color: '#52c41a',
-    bgColor: '#f6ffed'
-  },
-  {
-    type: 'end',
-    label: '结束',
-    icon: <StopOutlined />,
-    color: '#ff4d4f',
-    bgColor: '#fff1f0'
-  },
-  {
-    type: 'condition',
-    label: '条件',
-    icon: <FilterOutlined />,
-    color: '#1890ff',
-    bgColor: '#e6f7ff'
-  },
-  {
-    type: 'action',
-    label: '动作',
-    icon: <ThunderboltOutlined />,
-    color: '#faad14',
-    bgColor: '#fffbe6'
-  },
-  {
-    type: 'decision',
-    label: '决策',
-    icon: <BranchesOutlined />,
-    color: '#722ed1',
-    bgColor: '#f9f0ff'
-  },
-  {
-    type: 'group',
-    label: '分组',
-    icon: <FolderOutlined />,
-    color: '#13c2c2',
-    bgColor: '#e6fffb'
-  }
-];
+export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeType: NodeType) => void }> = ({ onDragStart }) => {
+  const { t } = useTranslation();
 
-interface NodePaletteProps {
-  onDragStart: (event: React.DragEvent, nodeType: NodeType) => void;
-}
+  const nodeTypes: NodeType[] = [
+    {
+      type: 'start',
+      label: t('nodePalette.nodeTypes.start'),
+      icon: <PlayCircleOutlined />,
+      color: '#52c41a',
+      bgColor: '#f6ffed'
+    },
+    {
+      type: 'end',
+      label: t('nodePalette.nodeTypes.end'),
+      icon: <StopOutlined />,
+      color: '#ff4d4f',
+      bgColor: '#fff1f0'
+    },
+    {
+      type: 'condition',
+      label: t('nodePalette.nodeTypes.condition'),
+      icon: <FilterOutlined />,
+      color: '#1890ff',
+      bgColor: '#e6f7ff'
+    },
+    {
+      type: 'action',
+      label: t('nodePalette.nodeTypes.action'),
+      icon: <ThunderboltOutlined />,
+      color: '#faad14',
+      bgColor: '#fffbe6'
+    },
+    {
+      type: 'decision',
+      label: t('nodePalette.nodeTypes.decision'),
+      icon: <BranchesOutlined />,
+      color: '#722ed1',
+      bgColor: '#f9f0ff'
+    },
+    {
+      type: 'group',
+      label: t('nodePalette.nodeTypes.group'),
+      icon: <FolderOutlined />,
+      color: '#13c2c2',
+      bgColor: '#e6fffb'
+    }
+  ];
 
-export const NodePalette: React.FC<NodePaletteProps> = ({ onDragStart }) => {
   return (
     <div style={{ padding: 16, height: '100%', overflowY: 'auto' }}>
       <Typography.Title level={5} style={{ marginBottom: 16 }}>
-        节点库
+        {t('nodePalette.title')}
       </Typography.Title>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {nodeTypes.map((node) => (
@@ -111,7 +110,7 @@ export const NodePalette: React.FC<NodePaletteProps> = ({ onDragStart }) => {
       
       <div style={{ marginTop: 24, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
         <Text type="secondary" style={{ fontSize: 12 }}>
-          提示：拖拽节点到画布上创建规则流程
+          {t('nodePalette.hint')}
         </Text>
       </div>
     </div>

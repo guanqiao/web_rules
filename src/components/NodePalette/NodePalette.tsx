@@ -259,7 +259,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
       </Typography.Title>
 
       <Search
-        placeholder="搜索节点..."
+        placeholder={t('nodePalette.searchPlaceholder')}
         allowClear
         prefix={<SearchOutlined />}
         style={{ marginBottom: 16 }}

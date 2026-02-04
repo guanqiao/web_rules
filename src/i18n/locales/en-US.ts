@@ -115,6 +115,15 @@ export default {
     nodeNamePlaceholder: 'Enter node name',
     nodeId: 'Node ID',
     nodeType: 'Node Type',
+    edgeTitle: 'Edge Properties',
+    edgeId: 'Edge ID',
+    source: 'Source Node',
+    target: 'Target Node',
+    copyConfig: 'Copy Config',
+    configError: 'Configuration Error',
+    configErrorDescription: 'Please check the fields marked in red below',
+    preview: 'Configuration Preview',
+    configCopied: 'Copied to clipboard',
     condition: {
       field: 'Field',
       fieldPlaceholder: 'e.g., $fact.age',
@@ -238,12 +247,46 @@ export default {
       condition: 'Condition Templates',
       action: 'Action Templates',
       decision: 'Decision Templates',
-      workflow: 'Workflow Templates'
+      workflow: 'Workflow Templates',
+      basic: 'Basic Templates',
+      advanced: 'Advanced Templates'
     },
     apply: 'Apply Template',
     preview: 'Preview Template',
     noTemplates: 'No templates available',
-    templateApplied: 'Template applied'
+    templateApplied: 'Template applied',
+    templateAppliedMessage: 'Template "{{name}}" applied',
+    previewTemplate: 'Template Preview',
+    applyTemplate: 'Apply Template',
+    description: 'Description',
+    rulePreview: 'Rule Preview',
+    nodeCount: 'Node Count',
+    edgeCount: 'Edge Count',
+    noMatchingTemplates: 'No matching templates found',
+    templateNames: {
+      simpleCondition: 'Simple Condition Rule',
+      simpleConditionDesc: 'Basic conditional rule with one condition node and one action node',
+      simpleConditionPreview: 'Rule: Set isAdult to true when age >= 18',
+      complexDecision: 'Complex Decision Rule',
+      complexDecisionDesc: 'Use decision node to implement complex branching logic',
+      complexDecisionPreview: 'Rule: Allow driving when age >= 18 and has license',
+      discountWorkflow: 'Discount Rule Workflow',
+      discountWorkflowDesc: 'Apply different discounts based on user type',
+      discountWorkflowPreview: 'Rule: Apply different discounts based on user type (VIP/Normal)',
+      groupPriority: 'Group and Priority',
+      groupPriorityDesc: 'Use group nodes to manage rule priority and agenda groups',
+      groupPriorityPreview: 'Rule: Use groups to manage rules with different priorities',
+      tags: {
+        group: 'Group',
+        priority: 'Priority'
+      },
+      labels: {
+        vipDiscount: 'VIP Discount',
+        normalDiscount: 'Normal Discount',
+        highPriority: 'High Priority Group',
+        normalPriority: 'Normal Priority Group'
+      }
+    }
   },
   shortcuts: {
     title: 'Keyboard Shortcuts',
@@ -261,7 +304,23 @@ export default {
     search: 'Search',
     preview: 'Preview',
     compile: 'Compile',
-    help: 'Help'
+    help: 'Help',
+    tips: 'Tips',
+    tip1: 'The "+" in shortcut combinations means keys to be pressed simultaneously',
+    tip2: 'Some shortcuts may vary depending on browser settings',
+    tip3: 'Shortcuts may not trigger when typing in input fields',
+    tip4: 'You can perform the same operations using toolbar buttons',
+    categories: {
+      edit: 'Edit Operations',
+      view: 'View Operations',
+      function: 'Function Operations',
+      node: 'Node Operations'
+    },
+    columns: {
+      icon: 'Icon',
+      action: 'Action',
+      shortcut: 'Shortcut'
+    }
   },
   help: {
     title: 'Help Documentation',
@@ -306,6 +365,101 @@ export default {
     keyboardShortcuts: {
       title: 'Keyboard Shortcuts',
       content: 'Use keyboard shortcuts to improve efficiency. Click the "Shortcuts" button to view all available shortcuts.'
+    },
+    welcome: {
+      label: 'Welcome',
+      intro1: 'Welcome to the Business Rule Configuration System! This is a visual Drools rule editor that helps you create and manage business rules by dragging and dropping nodes.',
+      intro2: 'The system supports compiling visual configurations into standard Drools DRL rule files, which can be downloaded as JAR packages for production use.'
+    },
+    interface: {
+      label: 'Interface Overview',
+      leftPalette: 'Left Node Palette: Contains all available node types that can be dragged to the canvas',
+      centerCanvas: 'Center Canvas: Main workspace for creating and connecting nodes',
+      rightPanel: 'Right Property Panel: Used to edit configuration properties of selected nodes',
+      topToolbar: 'Top Toolbar: Contains operation buttons such as preview, compile, download, save, etc.'
+    },
+    nodeTypes: {
+      label: 'Node Types',
+      description: 'The system provides the following 6 node types:',
+      start: 'Start Node (Circle): Starting point of rule flow, each rule must have exactly one',
+      end: 'End Node (Circle): Ending point of rule flow, can have multiple',
+      condition: 'Condition Node (Rectangle): Used to define rule condition judgments, supports multiple operators',
+      action: 'Action Node (Rectangle): Used to define actions when rules execute, such as setting values, calling methods, etc.',
+      decision: 'Decision Node (Diamond): Used to implement complex branching logic based on expression judgments',
+      group: 'Group Node (Rectangle): Used to organize rules, set priorities and agenda groups'
+    },
+    addNode: {
+      label: 'Add Nodes',
+      description1: 'Drag the required nodes from the left node palette to the canvas to create nodes. Nodes will be automatically placed at the drop release position.',
+      tip: 'Tip: You can use the search box to quickly find node types, or use the favorites feature to save commonly used nodes.'
+    },
+    connectNodes: {
+      label: 'Connect Nodes',
+      description1: 'Click on a node\'s connection point (small circles on left and right sides) and drag to another node\'s connection point to create a connection.',
+      description2: 'Connections represent the direction of rule execution flow, from source node to target node.'
+    },
+    deleteConnection: {
+      label: 'Delete Connection',
+      description: 'Click to select a connection line, then press the Delete key or use the right-click menu to delete the connection.'
+    },
+    editProperties: {
+      label: 'Edit Node Properties',
+      description1: 'After clicking a node, the right property panel will display configuration options for that node. Depending on the node type, configurable properties may vary.',
+      description2: 'The property panel will validate configuration correctness in real-time and display prompt messages when there are errors.'
+    },
+    configValidation: {
+      label: 'Configuration Validation',
+      description1: 'The system automatically validates node configuration correctness:',
+      check1: 'Completeness of node connections',
+      check2: 'Validity of configuration fields',
+      check3: 'Correctness of rule syntax'
+    },
+    compileRules: {
+      label: 'Compile Rules',
+      description1: 'Click the "Compile Rules" button in the toolbar, and the system will compile the visual configuration into Drools DRL rule files.',
+      description2: 'The compilation process checks:',
+      check1: 'Completeness of node connections',
+      check2: 'Validity of configuration fields'
+    },
+    previewCode: {
+      label: 'Preview DRL Code',
+      description: 'Click the "Preview" button to view the generated Drools rule code. The code preview window supports syntax highlighting and copy functionality.'
+    },
+    downloadZip: {
+      label: 'Download ZIP Package',
+      description1: 'Click the "Download Package" button, and the system will generate a ZIP package containing the following files:',
+      file1: 'rules.drl: Compiled Drools rule file',
+      file2: 'config.json: Visual configuration backup'
+    },
+    downloadJar: {
+      label: 'Download JAR Package',
+      description1: 'Click the "Download JAR" button, and the system will generate a directly deployable JAR package containing:',
+      file1: 'Compiled Drools rule file',
+      file2: 'Maven POM configuration file',
+      file3: 'KieModule configuration file'
+    },
+    useTemplates: {
+      label: 'Use Templates',
+      description1: 'Click the "Templates" button in the toolbar to access predefined rule templates. Templates are categorized by difficulty:',
+      template1: 'Basic Templates: Simple single rule examples',
+      template2: 'Advanced Templates: Rule examples with complex logic',
+      description2: 'You can preview template details and click the "Apply" button to load the template onto the canvas.'
+    },
+    shortcuts: {
+      label: 'Shortcut Instructions',
+      description1: 'Using shortcuts can significantly improve work efficiency. Click the "Shortcuts" button in the toolbar to view the complete list of shortcuts.',
+      description2: 'Common shortcuts:',
+      save: 'Ctrl + S: Save',
+      delete: 'Delete: Delete selected item',
+      preview: 'Ctrl + P: Preview',
+      compile: 'Ctrl + Enter: Compile'
+    },
+    resources: {
+      label: 'Related Resources',
+      description1: 'More help and resources:',
+      link1: 'View Drools official documentation to understand rule syntax',
+      link2: 'Use preview function to check generated code',
+      link3: 'Quickly create rules through templates'
     }
   },
   onboarding: {

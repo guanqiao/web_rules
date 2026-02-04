@@ -298,7 +298,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
 
   const handleApply = (template: RuleTemplate) => {
     onApplyTemplate(template);
-    message.success(`模板"${template.name}"已应用`);
+    message.success(t('templates.templateAppliedMessage', { name: template.name }));
     onClose();
   };
 
@@ -338,7 +338,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
         <div style={{ marginBottom: 16 }}>
           <Space size="middle" style={{ width: '100%' }}>
             <Search
-              placeholder="搜索模板..."
+              placeholder={t('templates.search')}
               allowClear
               prefix={<SearchOutlined />}
               style={{ width: 300 }}
@@ -346,15 +346,15 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
               value={searchText}
             />
             <Select
-              placeholder="选择分类"
+              placeholder={t('templates.categories.all')}
               style={{ width: 150 }}
               value={categoryFilter}
               onChange={setCategoryFilter}
             >
-              <Option value="all">全部分类</Option>
-              <Option value="basic">基础模板</Option>
-              <Option value="advanced">高级模板</Option>
-              <Option value="workflow">工作流模板</Option>
+              <Option value="all">{t('templates.categories.all')}</Option>
+              <Option value="basic">{t('templates.categories.basic')}</Option>
+              <Option value="advanced">{t('templates.categories.advanced')}</Option>
+              <Option value="workflow">{t('templates.categories.workflow')}</Option>
             </Select>
           </Space>
         </div>
@@ -378,7 +378,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
                       icon={<EyeOutlined />}
                       onClick={() => handlePreview(template)}
                     >
-                      预览
+                      {t('templates.preview')}
                     </Button>,
                     <Button 
                       key="apply" 
@@ -386,7 +386,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
                       icon={<DownloadOutlined />}
                       onClick={() => handleApply(template)}
                     >
-                      应用
+                      {t('templates.apply')}
                     </Button>
                   ]}
                 >
@@ -424,7 +424,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
           </div>
         ) : (
           <Empty 
-            description="未找到匹配的模板"
+            description={t('templates.noMatchingTemplates')}
             style={{ padding: '40px 0' }}
           />
         )}
@@ -432,12 +432,12 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
 
       {selectedTemplate && (
         <Modal
-          title={`模板预览 - ${selectedTemplate.name}`}
+          title={`${t('templates.previewTemplate')} - ${selectedTemplate.name}`}
           open={!!selectedTemplate}
           onCancel={() => setSelectedTemplate(null)}
           footer={[
             <Button key="close" onClick={() => setSelectedTemplate(null)}>
-              关闭
+              {t('common.close')}
             </Button>,
             <Button 
               key="apply" 
@@ -445,7 +445,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
               icon={<DownloadOutlined />}
               onClick={() => handleApply(selectedTemplate)}
             >
-              应用模板
+              {t('templates.applyTemplate')}
             </Button>
           ]}
           width={800}
@@ -462,12 +462,12 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
           </div>
           
           <div style={{ marginBottom: 16 }}>
-            <strong>描述：</strong>
+            <strong>{t('templates.description')}：</strong>
             <p style={{ color: '#595959', marginTop: 4 }}>{selectedTemplate.description}</p>
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <strong>规则预览：</strong>
+            <strong>{t('templates.rulePreview')}：</strong>
             <div style={{ 
               backgroundColor: '#f5f5f5', 
               padding: 12, 
@@ -481,9 +481,9 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
           </div>
 
           <div>
-            <strong>节点数量：</strong> {selectedTemplate.nodes.length}
+            <strong>{t('templates.nodeCount')}：</strong> {selectedTemplate.nodes.length}
             <span style={{ margin: '0 16px' }}>|</span>
-            <strong>连线数量：</strong> {selectedTemplate.edges.length}
+            <strong>{t('templates.edgeCount')}：</strong> {selectedTemplate.edges.length}
           </div>
         </Modal>
       )}

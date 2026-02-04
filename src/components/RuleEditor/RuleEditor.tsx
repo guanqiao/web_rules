@@ -32,6 +32,7 @@ import { ConditionNode } from '@/components/custom-nodes/ConditionNode';
 import { ActionNode } from '@/components/custom-nodes/ActionNode';
 import { DecisionNode } from '@/components/custom-nodes/DecisionNode';
 import { GroupNode } from '@/components/custom-nodes/GroupNode';
+import CustomEdge from '@/components/custom-edges/CustomEdge';
 
 import { generateNodeId, validateConnection, downloadFile } from '@/utils/helpers';
 import { compileToDRL, compileToJar } from '@/engines/DroolsCompiler';
@@ -57,6 +58,10 @@ const nodeTypes = {
   group: GroupNode
 };
 
+const edgeTypes = {
+  default: CustomEdge
+};
+
 const initialNodes: Node[] = [];
 const initialEdges: Edge[] = [];
 
@@ -65,6 +70,7 @@ export const RuleEditor: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [compiledDRL, setCompiledDRL] = useState<string>('');
   const [previewVisible, setPreviewVisible] = useState(false);
   const [saveModalVisible, setSaveModalVisible] = useState(false);
@@ -242,6 +248,22 @@ export const RuleEditor: React.FC = () => {
 
   const onPaneClick = useCallback(() => {
     setSelectedNode(null);
+    setSelectedEdge(null);
+  }, []);
+
+  const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    setSelectedEdge(edge);
+    setSelectedNode(null);
+  }, []);
+
+  const onSelectionChange = useCallback((params: any) => {
+    if (params.edges && params.edges.length > 0) {
+      setSelectedEdge(params.edges[0]);
+      setSelectedNode(null);
+    } else if (params.nodes && params.nodes.length > 0) {
+      setSelectedNode(params.nodes[0]);
+      setSelectedEdge(null);
+    }
   }, []);
 
   const onUpdateNode = useCallback((nodeId: string, data: any) => {
@@ -256,7 +278,32 @@ export const RuleEditor: React.FC = () => {
     setNodes((nds) => nds.filter((node) => node.id !== nodeId));
     setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
     setSelectedNode(null);
+    setSelectedEdge(null);
   }, [setNodes, setEdges]);
+
+  const onDeleteEdge = useCallback((edgeId: string) => {
+    setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
+    setSelectedEdge(null);
+  }, [setEdges]);
+
+  const onKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      if (selectedNode && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        event.preventDefault();
+        onDeleteNode(selectedNode.id);
+      } else if (selectedEdge && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        event.preventDefault();
+        onDeleteEdge(selectedEdge.id);
+      }
+    }
+  }, [selectedNode, selectedEdge, onDeleteNode, onDeleteEdge]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onKeyDown]);
 
   const onCompile = useCallback(() => {
     if (nodes.length === 0) {
@@ -413,6 +460,7 @@ export const RuleEditor: React.FC = () => {
     setNodes([]);
     setEdges([]);
     setSelectedNode(null);
+    setSelectedEdge(null);
     setCompiledDRL('');
     setSaveStatus('unsaved');
   }, [setNodes, setEdges]);
@@ -506,11 +554,14 @@ export const RuleEditor: React.FC = () => {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
+            onSelectionChange={onSelectionChange}
             onPaneClick={onPaneClick}
             onInit={setReactFlowInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             fitView
             snapToGrid={snapToGrid}
             snapGrid={[15, 15]}
@@ -561,8 +612,10 @@ export const RuleEditor: React.FC = () => {
         <div style={{ width: 300, borderLeft: '1px solid #f0f0f0', overflowY: 'auto' }}>
           <PropertyPanel
             selectedNode={selectedNode}
+            selectedEdge={selectedEdge}
             onUpdateNode={onUpdateNode}
             onDeleteNode={onDeleteNode}
+            onDeleteEdge={onDeleteEdge}
           />
         </div>
       </div>

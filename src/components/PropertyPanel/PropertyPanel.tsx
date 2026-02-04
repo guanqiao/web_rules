@@ -8,14 +8,18 @@ const { TextArea } = Input;
 
 export interface PropertyPanelProps {
   selectedNode: any;
+  selectedEdge: any;
   onUpdateNode: (nodeId: string, data: any) => void;
   onDeleteNode: (nodeId: string) => void;
+  onDeleteEdge: (edgeId: string) => void;
 }
 
 export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   selectedNode,
+  selectedEdge,
   onUpdateNode,
-  onDeleteNode
+  onDeleteNode,
+  onDeleteEdge
 }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
@@ -36,6 +40,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   const handleDelete = () => {
     if (selectedNode) {
       onDeleteNode(selectedNode.id);
+    } else if (selectedEdge) {
+      onDeleteEdge(selectedEdge.id);
     }
   };
 
@@ -105,7 +111,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   const copyToClipboard = () => {
     const code = generatePreviewCode();
     navigator.clipboard.writeText(code);
-    message.success('已复制到剪贴板');
+    message.success(t('propertyPanel.configCopied'));
   };
 
   useEffect(() => {
@@ -117,11 +123,46 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
     }
   }, [selectedNode, form]);
 
-  if (!selectedNode) {
+  if (!selectedNode && !selectedEdge) {
     return (
       <div style={{ padding: 16, height: '100%' }}>
         <Card style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: '#999' }}>{t('propertyPanel.selectNode')}</span>
+        </Card>
+      </div>
+    );
+  }
+
+  if (selectedEdge) {
+    return (
+      <div style={{ padding: 16, height: '100%' }}>
+        <Card
+          title={t('propertyPanel.edgeTitle')}
+          size="small"
+          extra={
+            <Button 
+              type="text" 
+              danger 
+              icon={<DeleteOutlined />}
+              onClick={handleDelete}
+            >
+              {t('propertyPanel.delete')}
+            </Button>
+          }
+        >
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <div style={{ fontSize: 12, color: '#999' }}>
+              <div>{t('propertyPanel.edgeId')}: {selectedEdge.id}</div>
+              <div style={{ marginTop: 8 }}>
+                {t('propertyPanel.source')}: 
+                <Tag color="blue">{selectedEdge.source}</Tag>
+              </div>
+              <div style={{ marginTop: 8 }}>
+                {t('propertyPanel.target')}: 
+                <Tag color="green">{selectedEdge.target}</Tag>
+              </div>
+            </div>
+          </Space>
         </Card>
       </div>
     );
@@ -138,7 +179,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
         size="small"
         extra={
           <Space>
-            <Tooltip title="复制配置">
+            <Tooltip title={t('propertyPanel.copyConfig')}>
               <Button 
                 type="text" 
                 icon={<CopyOutlined />}
@@ -158,8 +199,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
       >
         {hasErrors && (
           <Alert
-            message="配置有误"
-            description="请检查下方标记红色的字段"
+            message={t('propertyPanel.configError')}
+            description={t('propertyPanel.configErrorDescription')}
             type="error"
             showIcon
             style={{ marginBottom: 16 }}
@@ -337,7 +378,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
                 label: (
                   <Space>
                     <EyeOutlined />
-                    <span>配置预览</span>
+                    <span>{t('propertyPanel.preview')}</span>
                     {!hasErrors && <CheckCircleOutlined style={{ color: '#52c41a' }} />}
                   </Space>
                 ),

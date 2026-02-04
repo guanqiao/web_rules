@@ -28,7 +28,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
 
   const shortcuts = [
     {
-      category: '编辑操作',
+      category: t('shortcuts.categories.edit'),
       items: [
         { key: 'undo', action: t('shortcuts.undo'), shortcut: 'Ctrl + Z', icon: <UndoOutlined /> },
         { key: 'redo', action: t('shortcuts.redo'), shortcut: 'Ctrl + Y', icon: <RedoOutlined /> },
@@ -39,7 +39,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       ]
     },
     {
-      category: '视图操作',
+      category: t('shortcuts.categories.view'),
       items: [
         { key: 'zoomIn', action: t('shortcuts.zoomIn'), shortcut: 'Ctrl + +', icon: <ZoomInOutlined /> },
         { key: 'zoomOut', action: t('shortcuts.zoomOut'), shortcut: 'Ctrl + -', icon: <ZoomOutOutlined /> },
@@ -47,14 +47,14 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       ]
     },
     {
-      category: '功能操作',
+      category: t('shortcuts.categories.function'),
       items: [
         { key: 'preview', action: t('shortcuts.preview'), shortcut: 'Ctrl + P', icon: <EyeOutlined /> },
         { key: 'compile', action: t('shortcuts.compile'), shortcut: 'Ctrl + Enter', icon: <CodeOutlined /> }
       ]
     },
     {
-      category: '节点操作',
+      category: t('shortcuts.categories.node'),
       items: [
         { key: 'selectAll', action: t('shortcuts.selectAll'), shortcut: 'Ctrl + A', icon: <KeyOutlined /> },
         { key: 'search', action: t('shortcuts.search'), shortcut: 'Ctrl + F', icon: <KeyOutlined /> },
@@ -65,7 +65,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
 
   const columns = [
     {
-      title: '图标',
+      title: t('shortcuts.columns.icon'),
       dataIndex: 'icon',
       key: 'icon',
       width: 60,
@@ -74,13 +74,13 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
       )
     },
     {
-      title: '操作',
+      title: t('shortcuts.columns.action'),
       dataIndex: 'action',
       key: 'action',
       width: 200
     },
     {
-      title: '快捷键',
+      title: t('shortcuts.columns.shortcut'),
       dataIndex: 'shortcut',
       key: 'shortcut',
       render: (shortcut: string) => (
@@ -158,12 +158,12 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
         border: '1px solid #bae7ff'
       }}>
         <div style={{ fontSize: 12, color: '#595959', lineHeight: 1.6 }}>
-          <strong>提示：</strong>
+          <strong>{t('shortcuts.tips')}：</strong>
           <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
-            <li>快捷键组合中的 "+" 表示需要同时按下的键</li>
-            <li>部分快捷键可能因浏览器设置而有所不同</li>
-            <li>在输入框中输入时，快捷键可能不会触发</li>
-            <li>可以通过工具栏按钮执行相同的操作</li>
+            <li>{t('shortcuts.tip1')}</li>
+            <li>{t('shortcuts.tip2')}</li>
+            <li>{t('shortcuts.tip3')}</li>
+            <li>{t('shortcuts.tip4')}</li>
           </ul>
         </div>
       </div>

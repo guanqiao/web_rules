@@ -12,10 +12,16 @@ import {
   FileZipOutlined,
   UndoOutlined,
   RedoOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  AppstoreOutlined,
+  KeyboardOutlined,
+  QuestionCircleOutlined
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector/LanguageSelector';
+import { TemplateLibrary } from '@/components/TemplateLibrary/TemplateLibrary';
+import { ShortcutsModal } from '@/components/ShortcutsModal/ShortcutsModal';
+import { HelpModal } from '@/components/HelpModal/HelpModal';
 
 export interface ToolbarProps {
   onPreview: () => void;
@@ -34,6 +40,7 @@ export interface ToolbarProps {
   onRedo?: () => void;
   saveStatus?: 'saved' | 'unsaved' | 'saving';
   lastSavedTime?: Date | null;
+  onApplyTemplate?: (template: any) => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -52,9 +59,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onUndo,
   onRedo,
   saveStatus = 'unsaved',
-  lastSavedTime
+  lastSavedTime,
+  onApplyTemplate
 }) => {
   const { t } = useTranslation();
+  const [templateLibraryVisible, setTemplateLibraryVisible] = React.useState(false);
+  const [shortcutsVisible, setShortcutsVisible] = React.useState(false);
+  const [helpVisible, setHelpVisible] = React.useState(false);
 
   const handleClear = () => {
     Modal.confirm({
@@ -94,19 +105,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   };
 
   return (
-    <div style={{
-      padding: '12px 24px',
-      backgroundColor: '#fff',
-      borderBottom: '1px solid #f0f0f0',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    }}>
+    <>
+      <div style={{
+        padding: '12px 24px',
+        backgroundColor: '#fff',
+        borderBottom: '1px solid #f0f0f0',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 12
+      }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
           {t('toolbar.title')}
         </h2>
-        <Space size="small">
+        <Space size="small" wrap>
           {getSaveStatusTag()}
           {formatLastSavedTime() && (
             <span style={{ fontSize: 12, color: '#999' }}>
@@ -130,6 +144,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             icon={<RedoOutlined />} 
             onClick={onRedo}
             disabled={!canRedo}
+          />
+        </Tooltip>
+
+        <Tooltip title={t('toolbar.templates')}>
+          <Button 
+            icon={<AppstoreOutlined />} 
+            onClick={() => setTemplateLibraryVisible(true)}
+          >
+            {t('toolbar.templates')}
+          </Button>
+        </Tooltip>
+
+        <Tooltip title={t('toolbar.shortcuts')}>
+          <Button 
+            icon={<KeyboardOutlined />} 
+            onClick={() => setShortcutsVisible(true)}
           />
         </Tooltip>
 
@@ -191,6 +221,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             {t('toolbar.clear')}
           </Button>
         </Tooltip>
+
+        <Tooltip title={t('toolbar.help')}>
+          <Button 
+            icon={<QuestionCircleOutlined />} 
+            onClick={() => setHelpVisible(true)}
+          />
+        </Tooltip>
       </Space>
 
       <Space size="small">
@@ -215,6 +252,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           />
         </Tooltip>
       </Space>
-    </div>
+
+      <TemplateLibrary
+        visible={templateLibraryVisible}
+        onClose={() => setTemplateLibraryVisible(false)}
+        onApplyTemplate={(template) => {
+          if (onApplyTemplate) {
+            onApplyTemplate(template);
+          }
+        }}
+      />
+
+      <ShortcutsModal
+        visible={shortcutsVisible}
+        onClose={() => setShortcutsVisible(false)}
+      />
+
+      <HelpModal
+        visible={helpVisible}
+        onClose={() => setHelpVisible(false)}
+      />
+    </>
   );
 };

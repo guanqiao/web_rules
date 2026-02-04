@@ -34,7 +34,9 @@ export default {
     config: '配置',
     settings: '设置',
     help: '帮助',
-    about: '关于'
+    about: '关于',
+    apply: '应用',
+    template: '模板'
   },
   toolbar: {
     title: '业务规则配置系统',
@@ -74,7 +76,18 @@ export default {
       action: '动作',
       decision: '决策',
       group: '分组'
-    }
+    },
+    categories: {
+      all: '全部',
+      basic: '基础节点',
+      logic: '逻辑节点',
+      data: '数据节点'
+    },
+    favorites: '收藏节点',
+    searchPlaceholder: '搜索节点...',
+    noResults: '未找到匹配的节点',
+    addToFavorites: '添加到收藏',
+    removeFromFavorites: '从收藏移除'
   },
   propertyPanel: {
     title: '属性配置',
@@ -144,7 +157,10 @@ export default {
       required: '此字段为必填项',
       invalidFormat: '格式不正确',
       invalidValue: '值无效'
-    }
+    },
+    preview: '配置预览',
+    copyConfig: '复制配置',
+    configCopied: '配置已复制'
   },
   preview: {
     title: 'Drools规则预览',
@@ -212,7 +228,12 @@ export default {
     apply: '应用模板',
     preview: '预览模板',
     noTemplates: '暂无模板',
-    templateApplied: '模板已应用'
+    templateApplied: '模板已应用',
+    previewTemplate: '模板预览',
+    description: '描述',
+    rulePreview: '规则预览',
+    nodeCount: '节点数量',
+    edgeCount: '连线数量'
   },
   shortcuts: {
     title: '键盘快捷键',
@@ -230,7 +251,8 @@ export default {
     search: '搜索',
     preview: '预览',
     compile: '编译',
-    help: '帮助'
+    help: '帮助',
+    tips: '提示'
   },
   help: {
     title: '帮助文档',

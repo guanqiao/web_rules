@@ -11,7 +11,9 @@ import {
   Edge,
   Node,
   BackgroundVariant,
-  ReactFlowProvider
+  ReactFlowProvider,
+  Panel,
+  useReactFlow
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import JSZip from 'jszip';
@@ -32,10 +34,17 @@ import { GroupNode } from '@/components/custom-nodes/GroupNode';
 import { generateNodeId, validateConnection, downloadFile } from '@/utils/helpers';
 import { compileToDRL, compileToJar } from '@/engines/DroolsCompiler';
 import { RuleNode } from '@/types/rule.types';
-import { Modal, Input, message } from 'antd';
+import { Modal, Input, message, Button, Space, Tooltip, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useEditorStore } from '@/stores/useEditorStore';
 import { autoSaveManager } from '@/utils/autoSave';
+import { 
+  BorderOutlined, 
+  AppstoreOutlined,
+  ZoomInOutlined,
+  ZoomOutOutlined,
+  FullscreenOutlined
+} from '@ant-design/icons';
 
 const nodeTypes = {
   start: StartNode,
@@ -60,6 +69,8 @@ export const RuleEditor: React.FC = () => {
   const [ruleName, setRuleName] = useState('my-rules');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('unsaved');
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+  const [showGrid, setShowGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(true);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
@@ -100,13 +111,88 @@ export const RuleEditor: React.FC = () => {
   const onConnect = useCallback(
     (params: Connection) => {
       if (validateConnection(params.source!, params.target!, edges)) {
-        setEdges((eds) => addEdge(params, eds));
+        const newEdge = addEdge(params, edges);
+        setEdges(newEdge);
+        
+        const sourceNode = nodes.find(n => n.id === params.source);
+        const targetNode = nodes.find(n => n.id === params.target);
+        
+        if (sourceNode && targetNode) {
+          const recommendations = getSmartConnectionRecommendations(targetNode, nodes, edges);
+          if (recommendations.length > 0) {
+            message.info({
+              content: (
+                <div>
+                  <div>建议连接到：</div>
+                  {recommendations.map((rec, idx) => (
+                    <div key={idx} style={{ marginLeft: 16, fontSize: 12, color: '#1890ff' }}>
+                      • {rec}
+                    </div>
+                  ))}
+                </div>
+              ),
+              duration: 3
+            });
+          }
+        }
       } else {
         message.warning(t('editor.validation.invalidConnection'));
       }
     },
-    [edges, setEdges, t]
+    [edges, setEdges, t, nodes]
   );
+
+  const getSmartConnectionRecommendations = (node: Node, allNodes: Node[], allEdges: Edge[]): string[] => {
+    const recommendations: string[] = [];
+    const connectedSources = allEdges
+      .filter(e => e.target === node.id)
+      .map(e => allNodes.find(n => n.id === e.source)?.type);
+    
+    const connectedTargets = allEdges
+      .filter(e => e.source === node.id)
+      .map(e => allNodes.find(n => n.id === e.target)?.type);
+
+    switch (node.type) {
+      case 'start':
+        if (!connectedTargets.includes('condition') && !connectedTargets.includes('action')) {
+          recommendations.push('条件节点 - 用于添加判断逻辑');
+          recommendations.push('动作节点 - 用于直接执行操作');
+        }
+        break;
+      case 'condition':
+        if (!connectedTargets.includes('action')) {
+          recommendations.push('动作节点 - 条件满足后执行');
+        }
+        if (!connectedTargets.includes('condition')) {
+          recommendations.push('条件节点 - 添加更多条件判断');
+        }
+        if (!connectedTargets.includes('decision')) {
+          recommendations.push('决策节点 - 实现复杂分支逻辑');
+        }
+        break;
+      case 'action':
+        if (!connectedTargets.includes('end') && !connectedTargets.includes('action')) {
+          recommendations.push('结束节点 - 完成规则流程');
+          recommendations.push('动作节点 - 继续执行其他操作');
+        }
+        break;
+      case 'decision':
+        if (!connectedTargets.includes('action')) {
+          recommendations.push('动作节点 - 执行分支操作');
+        }
+        if (!connectedTargets.includes('end')) {
+          recommendations.push('结束节点 - 完成流程');
+        }
+        break;
+      case 'group':
+        if (!connectedTargets.includes('end')) {
+          recommendations.push('结束节点 - 完成分组流程');
+        }
+        break;
+    }
+    
+    return recommendations;
+  };
 
   const onDragStart = useCallback((event: React.DragEvent, nodeType: NodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType.type);
@@ -344,6 +430,30 @@ export const RuleEditor: React.FC = () => {
     }
   }, [reactFlowInstance]);
 
+  const onApplyTemplate = useCallback((template: any) => {
+    const offsetX = 50;
+    const offsetY = 50;
+    
+    const newNodes = template.nodes.map((node: any) => ({
+      ...node,
+      id: generateNodeId(),
+      position: {
+        x: node.position.x + offsetX,
+        y: node.position.y + offsetY
+      }
+    }));
+    
+    const newEdges = template.edges.map((edge: any) => ({
+      ...edge,
+      id: `edge-${Date.now()}-${Math.random()}`
+    }));
+    
+    setNodes(newNodes);
+    setEdges(newEdges);
+    setSaveStatus('unsaved');
+    message.success(`已应用模板：${template.name}`);
+  }, [setNodes, setEdges]);
+
   const canCompile = nodes.length > 0;
 
   return (
@@ -365,6 +475,7 @@ export const RuleEditor: React.FC = () => {
         onRedo={redo}
         saveStatus={saveStatus}
         lastSavedTime={lastSavedTime}
+        onApplyTemplate={onApplyTemplate}
       />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

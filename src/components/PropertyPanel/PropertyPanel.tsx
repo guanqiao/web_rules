@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card, Form, Input, Select, InputNumber, Button, Divider, Space } from 'antd';
-import { DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Card, Form, Input, Select, InputNumber, Button, Divider, Space, Alert, Collapse, Tag, Tooltip, message } from 'antd';
+import { DeleteOutlined, InfoCircleOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, CopyOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 const { Option } = Select;
@@ -19,9 +19,13 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const handleValuesChange = (_changedValues: any, allValues: any) => {
     if (selectedNode) {
+      const errors = validateConfig(selectedNode.type, allValues);
+      setValidationErrors(errors);
       onUpdateNode(selectedNode.id, {
         ...selectedNode.data,
         config: allValues
@@ -35,6 +39,84 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
     }
   };
 
+  const validateConfig = (nodeType: string, config: any): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    
+    if (nodeType === 'condition') {
+      if (!config.field) errors.field = '字段不能为空';
+      if (!config.operator) errors.operator = '操作符不能为空';
+      if (config.value === undefined || config.value === '') errors.value = '值不能为空';
+      
+      if (config.operator === 'in' || config.operator === 'not in') {
+        if (typeof config.value === 'string' && config.value.split(',').length < 2) {
+          errors.value = 'IN操作符需要至少两个值，用逗号分隔';
+        }
+      }
+    }
+    
+    if (nodeType === 'action') {
+      if (!config.type) errors.type = '动作类型不能为空';
+      if (!config.target) errors.target = '目标不能为空';
+      if (config.type === 'call' && !config.method) {
+        errors.method = '调用方法时必须指定方法名';
+      }
+    }
+    
+    if (nodeType === 'decision') {
+      if (!config.expression) errors.expression = '表达式不能为空';
+      try {
+        if (config.expression) {
+          new Function(`return ${config.expression}`);
+        }
+      } catch (e) {
+        errors.expression = '表达式语法错误';
+      }
+    }
+    
+    if (nodeType === 'group') {
+      if (!config.name) errors.name = '分组名称不能为空';
+      if (config.salience !== undefined && (config.salience < 0 || config.salience > 65535)) {
+        errors.salience = '优先级必须在0-65535之间';
+      }
+    }
+    
+    return errors;
+  };
+
+  const generatePreviewCode = () => {
+    if (!selectedNode) return '';
+    const config = selectedNode.data?.config || {};
+    const nodeType = selectedNode.type;
+    
+    switch (nodeType) {
+      case 'condition':
+        return `$${config.field} ${config.operator} ${config.value}`;
+      case 'action':
+        return `${config.type}(${config.target}${config.value ? `, ${config.value}` : ''}${config.method ? `, ${config.method}` : ''})`;
+      case 'decision':
+        return `if (${config.expression}) { ... }`;
+      case 'group':
+        return `agenda-group "${config.agendaGroup || 'default'}" ${config.salience !== undefined ? `salience ${config.salience}` : ''}`;
+      default:
+        return '';
+    }
+  };
+
+  const copyToClipboard = () => {
+    const code = generatePreviewCode();
+    navigator.clipboard.writeText(code);
+    message.success('已复制到剪贴板');
+  };
+
+  useEffect(() => {
+    if (selectedNode) {
+      const config = selectedNode.data?.config || {};
+      form.setFieldsValue(config);
+      const errors = validateConfig(selectedNode.type, config);
+      setValidationErrors(errors);
+    }
+  }, [selectedNode, form]);
+
   if (!selectedNode) {
     return (
       <div style={{ padding: 16, height: '100%' }}>
@@ -47,6 +129,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 
   const nodeType = selectedNode.type;
   const config = selectedNode.data?.config || {};
+  const hasErrors = Object.keys(validationErrors).length > 0;
 
   return (
     <div style={{ padding: 16, height: '100%', overflowY: 'auto' }}>
@@ -54,22 +137,43 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
         title={t('propertyPanel.title')}
         size="small"
         extra={
-          <Button 
-            type="text" 
-            danger 
-            icon={<DeleteOutlined />}
-            onClick={handleDelete}
-          >
-            {t('propertyPanel.delete')}
-          </Button>
+          <Space>
+            <Tooltip title="复制配置">
+              <Button 
+                type="text" 
+                icon={<CopyOutlined />}
+                onClick={copyToClipboard}
+              />
+            </Tooltip>
+            <Button 
+              type="text" 
+              danger 
+              icon={<DeleteOutlined />}
+              onClick={handleDelete}
+            >
+              {t('propertyPanel.delete')}
+            </Button>
+          </Space>
         }
       >
+        {hasErrors && (
+          <Alert
+            message="配置有误"
+            description="请检查下方标记红色的字段"
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+            icon={<CloseCircleOutlined />}
+          />
+        )}
+
         <Form
           form={form}
           layout="vertical"
           initialValues={config}
           onValuesChange={handleValuesChange}
           size="small"
+          validateTrigger="onChange"
         >
           <Form.Item 
             label={t('propertyPanel.nodeName')} 
@@ -86,6 +190,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.condition.field')} 
                 name="field"
+                validateStatus={validationErrors.field ? 'error' : ''}
+                help={validationErrors.field}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
                 extra={<InfoCircleOutlined style={{ color: '#1890ff' }} />}
               >
@@ -94,6 +200,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.condition.operator')} 
                 name="operator"
+                validateStatus={validationErrors.operator ? 'error' : ''}
+                help={validationErrors.operator}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
               >
                 <Select placeholder={t('propertyPanel.condition.operatorPlaceholder')}>
@@ -111,6 +219,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.condition.value')} 
                 name="value"
+                validateStatus={validationErrors.value ? 'error' : ''}
+                help={validationErrors.value}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
               >
                 <Input placeholder={t('propertyPanel.condition.valuePlaceholder')} />
@@ -132,6 +242,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.action.type')} 
                 name="type"
+                validateStatus={validationErrors.type ? 'error' : ''}
+                help={validationErrors.type}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
               >
                 <Select placeholder={t('propertyPanel.action.typePlaceholder')}>
@@ -145,6 +257,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.action.target')} 
                 name="target"
+                validateStatus={validationErrors.target ? 'error' : ''}
+                help={validationErrors.target}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
               >
                 <Input placeholder={t('propertyPanel.action.targetPlaceholder')} />
@@ -152,7 +266,12 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item label={t('propertyPanel.action.value')} name="value">
                 <Input placeholder={t('propertyPanel.action.valuePlaceholder')} />
               </Form.Item>
-              <Form.Item label={t('propertyPanel.action.method')} name="method">
+              <Form.Item 
+                label={t('propertyPanel.action.method')} 
+                name="method"
+                validateStatus={validationErrors.method ? 'error' : ''}
+                help={validationErrors.method}
+              >
                 <Input placeholder={t('propertyPanel.action.methodPlaceholder')} />
               </Form.Item>
             </>
@@ -163,6 +282,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.decision.expression')} 
                 name="expression"
+                validateStatus={validationErrors.expression ? 'error' : ''}
+                help={validationErrors.expression}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
               >
                 <TextArea 
@@ -178,6 +299,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.group.name')} 
                 name="name"
+                validateStatus={validationErrors.name ? 'error' : ''}
+                help={validationErrors.name}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
               >
                 <Input placeholder={t('propertyPanel.group.namePlaceholder')} />
@@ -185,6 +308,8 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
               <Form.Item 
                 label={t('propertyPanel.group.priority')} 
                 name="salience"
+                validateStatus={validationErrors.salience ? 'error' : ''}
+                help={validationErrors.salience}
               >
                 <InputNumber 
                   min={0} 
@@ -204,10 +329,43 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 
           <Divider />
 
+          <Collapse 
+            ghost
+            items={[
+              {
+                key: 'preview',
+                label: (
+                  <Space>
+                    <EyeOutlined />
+                    <span>配置预览</span>
+                    {!hasErrors && <CheckCircleOutlined style={{ color: '#52c41a' }} />}
+                  </Space>
+                ),
+                children: (
+                  <div style={{ 
+                    backgroundColor: '#f5f5f5', 
+                    padding: 12, 
+                    borderRadius: 4, 
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    wordBreak: 'break-all'
+                  }}>
+                    {generatePreviewCode()}
+                  </div>
+                )
+              }
+            ]}
+          />
+
+          <Divider />
+
           <Space direction="vertical" size="small" style={{ width: '100%' }}>
             <div style={{ fontSize: 12, color: '#999' }}>
               <div>{t('propertyPanel.nodeId')}: {selectedNode.id}</div>
-              <div>{t('propertyPanel.nodeType')}: {nodeType}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {t('propertyPanel.nodeType')}: 
+                <Tag color="blue">{nodeType}</Tag>
+              </div>
             </div>
           </Space>
         </Form>

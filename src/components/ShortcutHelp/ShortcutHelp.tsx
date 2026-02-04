@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Table, Tag, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { getDefaultShortcuts, Shortcut } from '@/utils/shortcuts';
+import { getDefaultShortcuts } from '@/utils/shortcuts';
 
 const { Text, Paragraph } = Typography;
 

@@ -1,42 +1,103 @@
 import React from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { Card } from 'antd';
 import { BranchesOutlined } from '@ant-design/icons';
 
 export const DecisionNode: React.FC<NodeProps> = ({ data, selected }) => {
   const config = data.config || {} as any;
   
   return (
-    <Card
-      size="small"
+    <div
       style={{
-        width: 220,
-        borderColor: selected ? '#1890ff' : '#722ed1',
-        backgroundColor: '#f9f0ff',
-        minWidth: 220
+        position: 'relative',
+        transition: 'all 0.3s ease',
+        transform: selected ? 'scale(1.05)' : 'scale(1)',
+        filter: selected ? 'drop-shadow(0 4px 12px rgba(114, 46, 209, 0.4))' : 'none'
       }}
-      bodyStyle={{ padding: '12px' }}
-      title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <BranchesOutlined style={{ color: '#722ed1', fontSize: 16 }} />
-          <span style={{ fontWeight: 600, fontSize: 13 }}>{String(data.label)}</span>
-        </div>
-      }
     >
-      <div style={{ fontSize: 11, color: '#666' }}>
-        {config.expression && (
-          <div style={{ marginBottom: 4 }}>
-            <strong>表达式:</strong> {String(config.expression)}
-          </div>
-        )}
-        {config.thenActions && config.thenActions.length > 0 && (
-          <div>
-            <strong>Then动作:</strong> {config.thenActions.length}个
-          </div>
-        )}
+      <div
+        style={{
+          width: 160,
+          height: 160,
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'grab',
+          transition: 'all 0.3s ease'
+        }}
+      >
+        <svg
+          width="160"
+          height="160"
+          viewBox="0 0 160 160"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            filter: selected ? 'drop-shadow(0 8px 24px rgba(114, 46, 209, 0.3))' : 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1))'
+          }}
+        >
+          <polygon
+            points="80,5 155,80 80,155 5,80"
+            fill={selected ? '#f9f0ff' : '#f9f0ff'}
+            stroke={selected ? '#1890ff' : '#722ed1'}
+            strokeWidth={selected ? '3' : '2'}
+            style={{ transition: 'all 0.3s ease' }}
+          />
+        </svg>
+        
+        <div style={{ zIndex: 1, textAlign: 'center', padding: '0 20px' }}>
+          <BranchesOutlined 
+            style={{ 
+              color: '#722ed1', 
+              fontSize: 28,
+              marginBottom: 6,
+              display: 'block'
+            }} 
+          />
+          <span style={{ fontWeight: 700, fontSize: 12, color: '#262626', display: 'block' }}>
+            {String(data.label)}
+          </span>
+          {config.expression && (
+            <span style={{ 
+              fontSize: 10, 
+              color: '#8c8c8c', 
+              marginTop: 4, 
+              display: 'block',
+              maxWidth: 120, 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap' 
+            }}>
+              {config.expression}
+            </span>
+          )}
+        </div>
       </div>
-      <Handle type="target" position={Position.Left} style={{ background: '#722ed1' }} />
-      <Handle type="source" position={Position.Right} style={{ background: '#722ed1' }} />
-    </Card>
+      
+      <Handle 
+        type="target" 
+        position={Position.Left} 
+        style={{ 
+          background: '#722ed1',
+          width: 12,
+          height: 12,
+          border: '2px solid #fff',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+        }} 
+      />
+      <Handle 
+        type="source" 
+        position={Position.Right} 
+        style={{ 
+          background: '#722ed1',
+          width: 12,
+          height: 12,
+          border: '2px solid #fff',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+        }} 
+      />
+    </div>
   );
 };

@@ -36,6 +36,7 @@ import CustomEdge from '@/components/custom-edges/CustomEdge';
 
 import { generateNodeId, validateConnection, downloadFile } from '@/utils/helpers';
 import { compileToDRL, compileToJar } from '@/engines/DroolsCompiler';
+import { buildAndDownloadCompiledJar, DroolsJarBuilder } from '@/engines/DroolsJarBuilder';
 import { RuleNode } from '@/types/rule.types';
 import { Modal, Input, message, Button, Space, Tooltip, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -82,6 +83,7 @@ export const RuleEditor: React.FC = () => {
   const [variableManagerVisible, setVariableManagerVisible] = useState(false);
   const [testPanelVisible, setTestPanelVisible] = useState(false);
   const [variables, setVariables] = useState<any[]>([]);
+  const [isCompilerAvailable, setIsCompilerAvailable] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
@@ -107,6 +109,14 @@ export const RuleEditor: React.FC = () => {
         setLastSavedTime(new Date());
       }
     );
+
+    // 检查编译服务是否可用
+    DroolsJarBuilder.checkCompilerHealth().then(available => {
+      setIsCompilerAvailable(available);
+      if (available) {
+        console.log('Java compiler service is available');
+      }
+    });
 
     return () => {
       autoSaveManager.stopAutoSave();
@@ -434,6 +444,56 @@ export const RuleEditor: React.FC = () => {
     }
   }, [nodes, edges, ruleName, t]);
 
+  const onDownloadCompiledJar = useCallback(async () => {
+    if (nodes.length === 0) {
+      message.warning(t('editor.validation.emptyNodes'));
+      return;
+    }
+
+    const dataModels = useEditorStore.getState().dataModels;
+    if (!dataModels || dataModels.length === 0) {
+      message.warning('请先配置数据模型');
+      return;
+    }
+
+    try {
+      message.loading({ content: '正在编译并打包...', key: 'compiledJarDownload', duration: 0 });
+      
+      const connections = edges.map(e => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceHandle: e.sourceHandle || undefined,
+        targetHandle: e.targetHandle || undefined
+      }));
+      
+      const result = await buildAndDownloadCompiledJar(
+        {
+          name: ruleName,
+          packageName: 'com.rules',
+          imports: [],
+          globals: [],
+          rules: []
+        },
+        {
+          version: '1.0.0',
+          vendor: 'Web Rules',
+          description: `Compiled Drools Rules - ${ruleName}`,
+          includeKModule: true,
+          dataModels: dataModels
+        }
+      );
+      
+      if (result.success) {
+        message.success({ content: '编译并下载成功！', key: 'compiledJarDownload' });
+      } else {
+        message.error({ content: result.error || '编译失败', key: 'compiledJarDownload' });
+      }
+    } catch (error) {
+      message.error({ content: `编译失败: ${(error as Error).message}`, key: 'compiledJarDownload' });
+    }
+  }, [nodes, edges, ruleName, t]);
+
   const onSave = useCallback(() => {
     setSaveModalVisible(true);
   }, []);
@@ -534,6 +594,8 @@ export const RuleEditor: React.FC = () => {
         onCompile={onCompile}
         onDownload={onDownload}
         onDownloadJar={onDownloadJar}
+        onDownloadCompiledJar={onDownloadCompiledJar}
+        isCompilerAvailable={isCompilerAvailable}
         onSave={onSave}
         onClear={onClear}
         onZoomIn={onZoomIn}

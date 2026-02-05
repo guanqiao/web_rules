@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Button, Tooltip, Modal, message, Badge, Tag } from 'antd';
+import { Space, Button, Tooltip, Modal, message, Tag, Avatar, Divider } from 'antd';
 import {
   CodeOutlined,
   DownloadOutlined,
@@ -18,7 +18,8 @@ import {
   QuestionCircleOutlined,
   ApiOutlined,
   PlayCircleOutlined,
-  DatabaseOutlined
+  DatabaseOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector/LanguageSelector';
@@ -34,6 +35,8 @@ export interface ToolbarProps {
   onCompile: () => void;
   onDownload: () => void;
   onDownloadJar: () => void;
+  onDownloadCompiledJar?: () => void;
+  isCompilerAvailable?: boolean;
   onSave: () => void;
   onClear: () => void;
   onZoomIn: () => void;
@@ -57,6 +60,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onCompile,
   onDownload,
   onDownloadJar,
+  onDownloadCompiledJar,
+  isCompilerAvailable = false,
   onSave,
   onClear,
   onZoomIn,
@@ -145,6 +150,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               </span>
             )}
           </Space>
+          <Divider type="vertical" style={{ height: 24 }} />
+          <Tooltip title={t('toolbar.authorTooltip')}>
+            <Space size="small" style={{ cursor: 'default' }}>
+              <Avatar size="small" icon={<UserOutlined />} style={{ backgroundColor: '#1890ff' }} />
+              <span style={{ fontSize: 13, color: '#666' }}>
+                {t('toolbar.author')}: <strong style={{ color: '#1890ff' }}>JasonD</strong>
+              </span>
+            </Space>
+          </Tooltip>
         </div>
 
         <Space size="small" wrap>
@@ -246,6 +260,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               {t('toolbar.downloadJar')}
             </Button>
           </Tooltip>
+
+          {isCompilerAvailable && (
+            <Tooltip title={t('toolbar.downloadCompiledJar')}>
+              <Button 
+                type="primary"
+                ghost
+                icon={<FileZipOutlined />} 
+                onClick={onDownloadCompiledJar}
+                disabled={!canCompile}
+              >
+                {t('toolbar.downloadCompiledJar')}
+              </Button>
+            </Tooltip>
+          )}
 
           <Tooltip title={t('toolbar.save')}>
             <Button 

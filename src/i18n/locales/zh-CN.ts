@@ -43,7 +43,8 @@ export default {
     preview: '预览',
     compile: '编译规则',
     download: '下载规则包',
-    downloadJar: '下载 JAR 包',
+    downloadJar: '下载源码 JAR',
+    downloadCompiledJar: '下载编译 JAR',
     save: '保存配置',
     clear: '清空',
     zoomIn: '放大',
@@ -75,7 +76,9 @@ export default {
       justNow: '刚刚',
       minutesAgo: '{{count}}分钟前',
       hoursAgo: '{{count}}小时前'
-    }
+    },
+    author: '作者',
+    authorTooltip: '本系统由 JasonD 开发'
   },
   nodePalette: {
     title: '节点库',
@@ -128,9 +131,13 @@ export default {
     configErrorDescription: '请检查下方标记红色的字段',
     preview: '配置预览',
     configCopied: '已复制到剪贴板',
+    fieldRequired: '必填',
+    noDataModels: '暂无数据模型',
+    noDataModelsHint: '请先定义数据模型以快速引用字段',
     condition: {
       field: '字段',
-      fieldPlaceholder: '例如: $fact.age',
+      fieldPlaceholder: '选择或输入字段名',
+      fieldTooltip: '从已定义的数据模型中选择字段，或手动输入字段名',
       operator: '操作符',
       operatorPlaceholder: '选择操作符',
       value: '值',
@@ -157,7 +164,8 @@ export default {
       type: '动作类型',
       typePlaceholder: '选择动作类型',
       target: '目标',
-      targetPlaceholder: '例如: fieldName 或 className',
+      targetPlaceholder: '选择或输入目标字段',
+      targetTooltip: '从已定义的数据模型中选择目标字段',
       value: '值',
       valuePlaceholder: '输入值',
       method: '方法名',
@@ -207,7 +215,9 @@ export default {
       package: '规则包',
       rules: '规则数量',
       imports: '导入数量',
-      lines: '代码行数'
+      lines: '代码行数',
+      errors: '错误数',
+      warnings: '警告数'
     },
     codePreview: '代码预览',
     nodes: '节点',
@@ -216,7 +226,16 @@ export default {
     copied: '已复制',
     copyFailed: '复制失败',
     copySuccess: '已复制到剪贴板',
-    tip: '提示：生成的Drools规则文件可以直接用于Drools规则引擎。请确保已正确配置相关的Java类和依赖项。'
+    tip: '提示：生成的Drools规则文件可以直接用于Drools规则引擎。请确保已正确配置相关的Java类和依赖项。',
+    errors: '错误',
+    warnings: '警告',
+    noIssues: '无问题',
+    syntaxIssues: '语法问题',
+    noSyntaxIssues: '未发现语法问题',
+    line: '行',
+    column: '列',
+    location: '位置',
+    suggestion: '建议'
   },
   editor: {
     addNode: '添加节点',

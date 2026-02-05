@@ -59,7 +59,8 @@ export default {
     preview: 'Preview',
     compile: 'Compile Rules',
     download: 'Download Package',
-    downloadJar: 'Download JAR',
+    downloadJar: 'Download Source JAR',
+    downloadCompiledJar: 'Download Compiled JAR',
     save: 'Save Config',
     clear: 'Clear',
     zoomIn: 'Zoom In',
@@ -91,7 +92,9 @@ export default {
       justNow: 'Just now',
       minutesAgo: '{{count}} minutes ago',
       hoursAgo: '{{count}} hours ago'
-    }
+    },
+    author: 'Author',
+    authorTooltip: 'Developed by JasonD'
   },
   nodePalette: {
     title: 'Node Palette',
@@ -144,9 +147,13 @@ export default {
     configErrorDescription: 'Please check the fields marked in red below',
     preview: 'Configuration Preview',
     configCopied: 'Copied to clipboard',
+    fieldRequired: 'Required',
+    noDataModels: 'No data models',
+    noDataModelsHint: 'Please define data models first to quickly reference fields',
     condition: {
       field: 'Field',
-      fieldPlaceholder: 'e.g., $fact.age',
+      fieldPlaceholder: 'Select or enter field name',
+      fieldTooltip: 'Select field from defined data models, or enter field name manually',
       operator: 'Operator',
       operatorPlaceholder: 'Select operator',
       value: 'Value',
@@ -173,7 +180,8 @@ export default {
       type: 'Action Type',
       typePlaceholder: 'Select action type',
       target: 'Target',
-      targetPlaceholder: 'e.g., fieldName or className',
+      targetPlaceholder: 'Select or enter target field',
+      targetTooltip: 'Select target field from defined data models',
       value: 'Value',
       valuePlaceholder: 'Enter value',
       method: 'Method Name',
@@ -223,7 +231,9 @@ export default {
       package: 'Package',
       rules: 'Rules',
       imports: 'Imports',
-      lines: 'Lines'
+      lines: 'Lines',
+      errors: 'Errors',
+      warnings: 'Warnings'
     },
     codePreview: 'Code Preview',
     nodes: 'Nodes',
@@ -232,7 +242,16 @@ export default {
     copied: 'Copied',
     copyFailed: 'Copy Failed',
     copySuccess: 'Copied to clipboard',
-    tip: 'Tip: The generated Drools rule file can be used directly in the Drools rule engine. Make sure you have configured the relevant Java classes and dependencies correctly.'
+    tip: 'Tip: The generated Drools rule file can be used directly in the Drools rule engine. Make sure you have configured the relevant Java classes and dependencies correctly.',
+    errors: 'Errors',
+    warnings: 'Warnings',
+    noIssues: 'No Issues',
+    syntaxIssues: 'Syntax Issues',
+    noSyntaxIssues: 'No syntax issues found',
+    line: 'Line',
+    column: 'Column',
+    location: 'Location',
+    suggestion: 'Suggestion'
   },
   editor: {
     addNode: 'Add Node',

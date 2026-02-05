@@ -98,3 +98,18 @@ export interface RuleFlowData {
   };
   dataModels?: DataModel[];
 }
+
+export interface DrlSyntaxError {
+  line: number;
+  column: number;
+  severity: 'error' | 'warning';
+  message: string;
+  code: string;
+  suggestion?: string;
+}
+
+export interface DrlCheckResult {
+  valid: boolean;
+  errors: DrlSyntaxError[];
+  warnings: DrlSyntaxError[];
+}

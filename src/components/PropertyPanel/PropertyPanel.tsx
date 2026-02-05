@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Select, InputNumber, Button, Divider, Space, Alert, Collapse, Tag, Tooltip, message } from 'antd';
-import { DeleteOutlined, InfoCircleOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, CopyOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Card, Form, Input, Select, InputNumber, Button, Divider, Space, Alert, Collapse, Tag, Tooltip, message, Empty } from 'antd';
+import { DeleteOutlined, InfoCircleOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, CopyOutlined, DatabaseOutlined, FieldStringOutlined, FieldNumberOutlined, FieldBinaryOutlined, CalendarOutlined, ProfileOutlined, UnorderedListOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useEditorStore } from '@/stores/useEditorStore';
+import { DataModel, DataModelField } from '@/types/rule.types';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -14,6 +16,50 @@ export interface PropertyPanelProps {
   onDeleteEdge: (edgeId: string) => void;
 }
 
+// 字段类型图标映射
+const getFieldTypeIcon = (type: DataModelField['type']) => {
+  switch (type) {
+    case 'string':
+      return <FieldStringOutlined style={{ color: '#52c41a' }} />;
+    case 'number':
+      return <FieldNumberOutlined style={{ color: '#1890ff' }} />;
+    case 'boolean':
+      return <FieldBinaryOutlined style={{ color: '#722ed1' }} />;
+    case 'date':
+      return <CalendarOutlined style={{ color: '#fa8c16' }} />;
+    case 'enum':
+      return <ProfileOutlined style={{ color: '#eb2f96' }} />;
+    case 'object':
+      return <DatabaseOutlined style={{ color: '#13c2c2' }} />;
+    case 'array':
+      return <UnorderedListOutlined style={{ color: '#fa541c' }} />;
+    default:
+      return <QuestionCircleOutlined style={{ color: '#999' }} />;
+  }
+};
+
+// 字段类型颜色映射
+const getFieldTypeColor = (type: DataModelField['type']) => {
+  switch (type) {
+    case 'string':
+      return 'green';
+    case 'number':
+      return 'blue';
+    case 'boolean':
+      return 'purple';
+    case 'date':
+      return 'orange';
+    case 'enum':
+      return 'magenta';
+    case 'object':
+      return 'cyan';
+    case 'array':
+      return 'volcano';
+    default:
+      return 'default';
+  }
+};
+
 export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   selectedNode,
   selectedEdge,
@@ -23,8 +69,60 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
-  const [previewVisible, setPreviewVisible] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setPreviewVisible] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
+  // 从 store 获取数据模型
+  const dataModels = useEditorStore((state) => state.dataModels);
+
+  // 生成字段选项（按数据模型分组）
+  const fieldOptions = useMemo(() => {
+    return dataModels.map((model: DataModel) => ({
+      label: (
+        <span>
+          <DatabaseOutlined style={{ marginRight: 4 }} />
+          {model.name}
+        </span>
+      ),
+      options: model.fields.map((field: DataModelField) => ({
+        label: (
+          <Space size="small">
+            {getFieldTypeIcon(field.type)}
+            <span>{field.name}</span>
+            <Tag color={getFieldTypeColor(field.type)}>{field.type}</Tag>
+            {field.required && <Tag color="red">{t('propertyPanel.fieldRequired')}</Tag>}
+          </Space>
+        ),
+        value: field.name,
+        field: field,
+        model: model
+      }))
+    }));
+  }, [dataModels, t]);
+
+  // 生成简单的字段列表（用于动作节点）
+  const simpleFieldOptions = useMemo(() => {
+    const options: { label: React.ReactNode; value: string; field: DataModelField; model: DataModel }[] = [];
+    dataModels.forEach((model: DataModel) => {
+      model.fields.forEach((field: DataModelField) => {
+        options.push({
+          label: (
+            <Space size="small">
+              {getFieldTypeIcon(field.type)}
+              <span>{field.name}</span>
+              <Tag color={getFieldTypeColor(field.type)}>{field.type}</Tag>
+              <span style={{ color: '#999', fontSize: 12 }}>({model.name})</span>
+            </Space>
+          ),
+          value: field.name,
+          field: field,
+          model: model
+        });
+      });
+    });
+    return options;
+  }, [dataModels]);
 
   const handleValuesChange = (_changedValues: any, allValues: any) => {
     if (selectedNode) {
@@ -240,9 +338,43 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
                 validateStatus={validationErrors.field ? 'error' : ''}
                 help={validationErrors.field}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
-                extra={<InfoCircleOutlined style={{ color: '#1890ff' }} />}
+                extra={
+                  <Tooltip title={t('propertyPanel.condition.fieldTooltip')}>
+                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                  </Tooltip>
+                }
               >
-                <Input placeholder={t('propertyPanel.condition.fieldPlaceholder')} />
+                <Select
+                  showSearch
+                  allowClear
+                  placeholder={t('propertyPanel.condition.fieldPlaceholder')}
+                  options={fieldOptions}
+                  optionFilterProp="value"
+                  filterOption={(input, option) => {
+                    if (!option) return false;
+                    // 对于分组选项，检查选项的 value 或 label 文本
+                    const optionValue = (option as any).value || '';
+                    const optionLabel = (option as any).label || '';
+                    const searchText = typeof optionLabel === 'string' ? optionLabel : optionValue;
+                    return searchText.toLowerCase().includes(input.toLowerCase());
+                  }}
+                  notFoundContent={
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={t('propertyPanel.noDataModels')}
+                    />
+                  }
+                  dropdownRender={(menu) => (
+                    <div>
+                      {dataModels.length === 0 && (
+                        <div style={{ padding: '8px 12px', color: '#999', fontSize: 12 }}>
+                          {t('propertyPanel.noDataModelsHint')}
+                        </div>
+                      )}
+                      {menu}
+                    </div>
+                  )}
+                />
               </Form.Item>
               <Form.Item 
                 label={t('propertyPanel.condition.operator')} 
@@ -307,8 +439,40 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
                 validateStatus={validationErrors.target ? 'error' : ''}
                 help={validationErrors.target}
                 rules={[{ required: true, message: t('propertyPanel.validation.required') }]}
+                extra={
+                  <Tooltip title={t('propertyPanel.action.targetTooltip')}>
+                    <InfoCircleOutlined style={{ color: '#1890ff' }} />
+                  </Tooltip>
+                }
               >
-                <Input placeholder={t('propertyPanel.action.targetPlaceholder')} />
+                <Select
+                  showSearch
+                  allowClear
+                  placeholder={t('propertyPanel.action.targetPlaceholder')}
+                  options={simpleFieldOptions}
+                  optionFilterProp="value"
+                  filterOption={(input, option) => {
+                    if (!option) return false;
+                    const optionValue = (option as any).value || '';
+                    return optionValue.toLowerCase().includes(input.toLowerCase());
+                  }}
+                  notFoundContent={
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={t('propertyPanel.noDataModels')}
+                    />
+                  }
+                  dropdownRender={(menu) => (
+                    <div>
+                      {dataModels.length === 0 && (
+                        <div style={{ padding: '8px 12px', color: '#999', fontSize: 12 }}>
+                          {t('propertyPanel.noDataModelsHint')}
+                        </div>
+                      )}
+                      {menu}
+                    </div>
+                  )}
+                />
               </Form.Item>
               <Form.Item label={t('propertyPanel.action.value')} name="value">
                 <Input placeholder={t('propertyPanel.action.valuePlaceholder')} />

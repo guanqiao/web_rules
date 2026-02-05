@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { DroolsRule, DataModel } from '@/types/rule.types';
 import { JavaModelCompiler } from './JavaModelCompiler';
+import CompilerApi from '@/api/compilerApi';
 
 export interface JarBuildConfig {
   version?: string;
@@ -10,6 +11,8 @@ export interface JarBuildConfig {
   includeKModule?: boolean;
   dataModels?: DataModel[];
 }
+
+export type JarBuildMode = 'source' | 'compiled';
 
 export class DroolsJarBuilder {
   private rule: DroolsRule;
@@ -40,6 +43,25 @@ export class DroolsJarBuilder {
     this.addPomXml(zip);
 
     return await zip.generateAsync({ type: 'blob' });
+  }
+
+  async buildCompiledJar(): Promise<{ success: boolean; error?: string }> {
+    if (!this.config.dataModels || this.config.dataModels.length === 0) {
+      return { success: false, error: 'No data models to compile' };
+    }
+
+    const drlContent = this.generateDrlContent();
+
+    const result = await CompilerApi.compileAndDownloadJar({
+      dataModels: this.config.dataModels,
+      ruleName: this.rule.name,
+      rulePackage: this.rule.packageName,
+      version: this.config.version,
+      includeDrools: true,
+      droolsContent: drlContent,
+    });
+
+    return result;
   }
 
   private addDataModelClasses(zip: JSZip): void {
@@ -208,6 +230,10 @@ Build-Time: ${new Date().toISOString()}
     const defaultFilename = `${this.rule.name.toLowerCase().replace(/\s+/g, '-')}-${this.config.version}.jar`;
     saveAs(blob, filename || defaultFilename);
   }
+
+  static async checkCompilerHealth(): Promise<boolean> {
+    return await CompilerApi.checkHealth();
+  }
 }
 
 export async function buildAndDownloadJar(
@@ -217,4 +243,12 @@ export async function buildAndDownloadJar(
 ): Promise<void> {
   const builder = new DroolsJarBuilder(rule, config);
   await builder.downloadJar(filename);
+}
+
+export async function buildAndDownloadCompiledJar(
+  rule: DroolsRule,
+  config?: JarBuildConfig
+): Promise<{ success: boolean; error?: string }> {
+  const builder = new DroolsJarBuilder(rule, config);
+  return await builder.buildCompiledJar();
 }

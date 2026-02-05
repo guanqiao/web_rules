@@ -31,6 +31,10 @@ public class JavaCompilerService {
         "array", List.of("import java.util.List;", "import java.util.ArrayList;")
     );
 
+    private static final List<String> DEFAULT_IMPORTS = List.of(
+        "import java.util.Objects;"
+    );
+
     public Map<String, byte[]> compileDataModels(List<DataModelDTO> dataModels) throws Exception {
         Map<String, byte[]> compiledClasses = new HashMap<>();
         
@@ -39,6 +43,8 @@ public class JavaCompilerService {
             String className = model.getPackageName() + "." + model.getName();
             
             log.info("Compiling class: {}", className);
+            log.debug("Generated Java code:\n{}", javaCode);
+            
             byte[] bytecode = compileJavaCode(className, javaCode);
             
             if (bytecode != null) {
@@ -56,6 +62,10 @@ public class JavaCompilerService {
         sb.append("package ").append(model.getPackageName()).append(";\n\n");
         
         Set<String> imports = new LinkedHashSet<>();
+        
+        // Add default imports
+        imports.addAll(DEFAULT_IMPORTS);
+        
         for (DataModelFieldDTO field : model.getFields()) {
             List<String> fieldImports = IMPORT_MAP.get(field.getType());
             if (fieldImports != null) {
@@ -112,12 +122,16 @@ public class JavaCompilerService {
     private String generateConstructors(DataModelDTO model) {
         StringBuilder sb = new StringBuilder();
         
+        // Default constructor
         sb.append("    public ").append(model.getName()).append("() {");
         
         for (DataModelFieldDTO field : model.getFields()) {
-            if (field.getDefaultValue() != null) {
-                sb.append("\n        this.").append(field.getName())
-                  .append(" = ").append(formatDefaultValue(field)).append(";");
+            if (field.getDefaultValue() != null && !field.getDefaultValue().toString().isEmpty()) {
+                String defaultValue = formatDefaultValue(field);
+                if (!"null".equals(defaultValue) || isNullableType(field)) {
+                    sb.append("\n        this.").append(field.getName())
+                      .append(" = ").append(defaultValue).append(";");
+                }
             } else if ("array".equals(field.getType())) {
                 sb.append("\n        this.").append(field.getName())
                   .append(" = new ArrayList<>();");
@@ -126,6 +140,7 @@ public class JavaCompilerService {
         
         sb.append("\n    }\n\n");
         
+        // Constructor with required fields
         List<DataModelFieldDTO> requiredFields = model.getFields().stream()
             .filter(DataModelFieldDTO::isRequired)
             .collect(Collectors.toList());
@@ -144,9 +159,12 @@ public class JavaCompilerService {
             
             for (DataModelFieldDTO field : model.getFields()) {
                 if (!field.isRequired()) {
-                    if (field.getDefaultValue() != null) {
-                        sb.append("        this.").append(field.getName())
-                          .append(" = ").append(formatDefaultValue(field)).append(";\n");
+                    if (field.getDefaultValue() != null && !field.getDefaultValue().toString().isEmpty()) {
+                        String defaultValue = formatDefaultValue(field);
+                        if (!"null".equals(defaultValue) || isNullableType(field)) {
+                            sb.append("        this.").append(field.getName())
+                              .append(" = ").append(defaultValue).append(";\n");
+                        }
                     } else if ("array".equals(field.getType())) {
                         sb.append("        this.").append(field.getName())
                           .append(" = new ArrayList<>();\n");
@@ -164,13 +182,14 @@ public class JavaCompilerService {
         Object value = field.getDefaultValue();
         if (value == null) return "null";
         
+        String strValue = value.toString();
+        if (strValue.isEmpty()) return "null";
+        
         return switch (field.getType()) {
-            case "string", "enum" -> "\"" + value + "\"";
-            case "number" -> value.toString();
-            case "boolean" -> value.toString();
-            case "date" -> value.toString().isEmpty() 
-                ? "LocalDateTime.now()" 
-                : "LocalDateTime.parse(\"" + value + "\")";
+            case "string", "enum" -> "\"" + strValue + "\"";
+            case "number" -> strValue;
+            case "boolean" -> strValue;
+            case "date" -> "LocalDateTime.parse(\"" + strValue + "\")";
             case "array" -> "new ArrayList<>()";
             default -> "null";
         };
@@ -183,11 +202,13 @@ public class JavaCompilerService {
             String capitalizedName = capitalizeFirstLetter(field.getName());
             String javaType = getJavaType(field);
             
+            // Getter
             sb.append("    public ").append(javaType).append(" get")
               .append(capitalizedName).append("() {\n");
             sb.append("        return ").append(field.getName()).append(";\n");
             sb.append("    }\n\n");
             
+            // Setter
             sb.append("    public void set").append(capitalizedName)
               .append("(").append(javaType).append(" ").append(field.getName()).append(") {\n");
             sb.append("        this.").append(field.getName()).append(" = ").append(field.getName()).append(";\n");
@@ -206,11 +227,16 @@ public class JavaCompilerService {
         for (int i = 0; i < model.getFields().size(); i++) {
             DataModelFieldDTO field = model.getFields().get(i);
             if (i > 0) sb.append(", ");
-            sb.append(field.getName()).append("='").append(" + ")
-              .append(field.getName()).append(" + '\''");
+            sb.append(field.getName()).append("='");
         }
         
-        sb.append("}';\n");
+        sb.append("\"");
+        
+        for (DataModelFieldDTO field : model.getFields()) {
+            sb.append(" + ").append(field.getName()).append(" + \"'\"");
+        }
+        
+        sb.append(" + \"}\";\n");
         sb.append("    }\n\n");
         return sb.toString();
     }
@@ -284,6 +310,7 @@ public class JavaCompilerService {
             String errors = diagnostics.getDiagnostics().stream()
                 .map(d -> d.getMessage(null))
                 .collect(Collectors.joining("\n"));
+            log.error("Compilation failed. Generated code:\n{}", javaCode);
             throw new RuntimeException("Compilation failed:\n" + errors);
         }
 
@@ -293,6 +320,12 @@ public class JavaCompilerService {
     private String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    private boolean isNullableType(DataModelFieldDTO field) {
+        String type = field.getType();
+        return "string".equals(type) || "enum".equals(type) || "date".equals(type) 
+               || "array".equals(type) || "object".equals(type);
     }
 
     private static class InMemoryJavaFileObject extends SimpleJavaFileObject {

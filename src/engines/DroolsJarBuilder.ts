@@ -186,11 +186,13 @@ Build-Time: ${new Date().toISOString()}
       drl += '\n';
     }
 
-    drl += '// Rules\n';
-    this.rule.rules.forEach(rule => {
-      drl += this.formatRule(rule);
-      drl += '\n';
-    });
+    if (this.rule.rules && this.rule.rules.length > 0) {
+      drl += '// Rules\n';
+      this.rule.rules.forEach(rule => {
+        drl += this.formatRule(rule);
+        drl += '\n';
+      });
+    }
 
     return drl;
   }
@@ -212,14 +214,18 @@ Build-Time: ${new Date().toISOString()}
     }
 
     ruleStr += '    when\n';
-    rule.when.forEach((clause: string) => {
-      ruleStr += `        ${clause}\n`;
-    });
+    if (rule.when && Array.isArray(rule.when)) {
+      rule.when.forEach((clause: string) => {
+        ruleStr += `        ${clause}\n`;
+      });
+    }
 
     ruleStr += '    then\n';
-    rule.then.forEach((statement: string) => {
-      ruleStr += `        ${statement}\n`;
-    });
+    if (rule.then && Array.isArray(rule.then)) {
+      rule.then.forEach((statement: string) => {
+        ruleStr += `        ${statement}\n`;
+      });
+    }
 
     ruleStr += 'end\n';
     return ruleStr;

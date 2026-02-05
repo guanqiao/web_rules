@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.jar.*;
+import java.util.zip.Deflater;
 
 @Slf4j
 @Service
@@ -102,12 +103,11 @@ public class JarBuilderService {
     }
 
     private String generateKModuleXml(String packageName) {
-        return """<?xml version="1.0" encoding="UTF-8"?>
-<kmodule xmlns="http://www.drools.org/xsd/kmodule">
-    <kbase name="rulesKBase" packages="%s">
-        <ksession name="rulesKSession" />
-    </kbase>
-</kmodule>
-""".formatted(packageName);
+        return String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<kmodule xmlns=\"http://www.drools.org/xsd/kmodule\">\n" +
+            "    <kbase name=\"rulesKBase\" packages=\"%s\">\n" +
+            "        <ksession name=\"rulesKSession\" />\n" +
+            "    </kbase>\n" +
+            "</kmodule>\n", packageName);
     }
 }

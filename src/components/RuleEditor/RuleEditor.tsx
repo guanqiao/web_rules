@@ -85,6 +85,9 @@ export const RuleEditor: React.FC = () => {
   const [testPanelVisible, setTestPanelVisible] = useState(false);
   const [variables, setVariables] = useState<any[]>([]);
   const [isCompilerAvailable, setIsCompilerAvailable] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
+  const [compileStatus, setCompileStatus] = useState<'idle' | 'compiling' | 'success' | 'error'>('idle');
+  const [compileMessage, setCompileMessage] = useState('');
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
 
@@ -460,9 +463,11 @@ export const RuleEditor: React.FC = () => {
       return;
     }
 
+    setIsCompiling(true);
+    setCompileStatus('compiling');
+    setCompileMessage('正在编译数据模型...');
+
     try {
-      message.loading({ content: '正在编译并打包...', key: 'compiledJarDownload', duration: 0 });
-      
       const connections = edges.map(e => ({
         id: e.id,
         source: e.source,
@@ -489,12 +494,26 @@ export const RuleEditor: React.FC = () => {
       );
       
       if (result.success) {
+        setCompileStatus('success');
+        setCompileMessage(`编译成功！已下载 ${dataModels.length} 个数据模型`);
         message.success({ content: '编译并下载成功！', key: 'compiledJarDownload' });
+        
+        // 3秒后重置状态
+        setTimeout(() => {
+          setCompileStatus('idle');
+          setCompileMessage('');
+        }, 3000);
       } else {
+        setCompileStatus('error');
+        setCompileMessage(result.error || '编译失败');
         message.error({ content: result.error || '编译失败', key: 'compiledJarDownload' });
       }
     } catch (error) {
+      setCompileStatus('error');
+      setCompileMessage(`编译失败: ${(error as Error).message}`);
       message.error({ content: `编译失败: ${(error as Error).message}`, key: 'compiledJarDownload' });
+    } finally {
+      setIsCompiling(false);
     }
   }, [nodes, edges, ruleName, t]);
 
@@ -615,6 +634,9 @@ export const RuleEditor: React.FC = () => {
         onApplyTemplate={onApplyTemplate}
         onOpenVariables={onOpenVariables}
         onOpenTest={onOpenTest}
+        isCompiling={isCompiling}
+        compileStatus={compileStatus}
+        compileMessage={compileMessage}
       />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Space, Button, Tooltip, Modal, message, Tag, Avatar, Divider } from 'antd';
+import { Space, Button, Tooltip, Modal, message, Tag, Avatar, Divider, Badge } from 'antd';
 import {
   CodeOutlined,
   DownloadOutlined,
@@ -19,7 +19,9 @@ import {
   ApiOutlined,
   PlayCircleOutlined,
   DatabaseOutlined,
-  UserOutlined
+  UserOutlined,
+  CheckCircleOutlined,
+  DisconnectOutlined
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector/LanguageSelector';
@@ -53,6 +55,9 @@ export interface ToolbarProps {
   onOpenVariables?: () => void;
   onOpenTest?: () => void;
   onOpenDataModels?: () => void;
+  isCompiling?: boolean;
+  compileStatus?: 'idle' | 'compiling' | 'success' | 'error';
+  compileMessage?: string;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -77,7 +82,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onApplyTemplate,
   onOpenVariables,
   onOpenTest,
-  onOpenDataModels
+  onOpenDataModels,
+  isCompiling = false,
+  compileStatus = 'idle',
+  compileMessage = ''
 }) => {
   const { t } = useTranslation();
   const [templateLibraryVisible, setTemplateLibraryVisible] = React.useState(false);
@@ -148,6 +156,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               <span style={{ fontSize: 12, color: '#999' }}>
                 <ClockCircleOutlined /> {formatLastSavedTime()}
               </span>
+            )}
+            <Tooltip title={isCompilerAvailable ? 'Java编译服务已连接' : 'Java编译服务未连接'}>
+              <Tag color={isCompilerAvailable ? 'success' : 'default'} icon={isCompilerAvailable ? <CheckCircleOutlined /> : <DisconnectOutlined />}>
+                {isCompilerAvailable ? '编译器已连接' : '编译器未连接'}
+              </Tag>
+            </Tooltip>
+            {isCompiling && (
+              <Tag color="processing" icon={<ClockCircleOutlined spin />}>
+                编译中...
+              </Tag>
+            )}
+            {compileStatus === 'success' && (
+              <Tag color="success" icon={<CheckCircleOutlined />}>
+                {compileMessage || '编译成功'}
+              </Tag>
+            )}
+            {compileStatus === 'error' && (
+              <Tag color="error">
+                {compileMessage || '编译失败'}
+              </Tag>
             )}
           </Space>
           <Divider type="vertical" style={{ height: 24 }} />

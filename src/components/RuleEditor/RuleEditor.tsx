@@ -74,6 +74,7 @@ export const RuleEditor: React.FC = () => {
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [compiledDRL, setCompiledDRL] = useState<string>('');
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [isDrlEdited, setIsDrlEdited] = useState(false);
   const [saveModalVisible, setSaveModalVisible] = useState(false);
   const [ruleName, setRuleName] = useState('my-rules');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('unsaved');
@@ -331,6 +332,7 @@ export const RuleEditor: React.FC = () => {
       }));
       const drl = compileToDRL(nodes as RuleNode[], connections);
       setCompiledDRL(drl);
+      setIsDrlEdited(false);
       message.success(t('editor.validation.compileSuccess'));
     } catch (error) {
       message.error(t('editor.validation.compileFailed', { error: (error as Error).message }));
@@ -342,9 +344,11 @@ export const RuleEditor: React.FC = () => {
       message.warning(t('editor.validation.emptyNodes'));
       return;
     }
-    onCompile();
+    if (!isDrlEdited) {
+      onCompile();
+    }
     setPreviewVisible(true);
-  }, [nodes, onCompile, t]);
+  }, [nodes, onCompile, t, isDrlEdited]);
 
   const onDownload = useCallback(async () => {
     if (nodes.length === 0) {
@@ -698,6 +702,10 @@ export const RuleEditor: React.FC = () => {
         onClose={() => setPreviewVisible(false)}
         nodesCount={nodes.length}
         edgesCount={edges.length}
+        onSave={(editedCode) => {
+          setCompiledDRL(editedCode);
+          setIsDrlEdited(true);
+        }}
       />
 
       <Modal

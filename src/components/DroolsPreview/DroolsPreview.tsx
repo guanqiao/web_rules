@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, Button, Space, Typography, Card, Statistic, Row, Col, message, Alert, Badge, Tooltip, List, Tag } from 'antd';
-import { CopyOutlined, CheckOutlined, FileTextOutlined, WarningOutlined, CloseCircleOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Modal, Button, Space, Typography, Card, Statistic, Row, Col, message, Alert, Badge, Tooltip, List, Tag, Input } from 'antd';
+import { CopyOutlined, CheckOutlined, FileTextOutlined, WarningOutlined, CloseCircleOutlined, CheckCircleOutlined, ExclamationCircleOutlined, EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { checkDrlSyntax, DrlSyntaxError, DrlCheckResult } from '@/engines/DrlSyntaxChecker';
 
 const { Text, Paragraph } = Typography;
+const { TextArea } = Input;
 
 export interface DroolsPreviewProps {
   visible: boolean;
@@ -12,6 +13,7 @@ export interface DroolsPreviewProps {
   onClose: () => void;
   nodesCount: number;
   edgesCount: number;
+  onSave?: (editedCode: string) => void;
 }
 
 interface LineWithError {
@@ -26,12 +28,15 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
   drlCode,
   onClose,
   nodesCount,
-  edgesCount
+  edgesCount,
+  onSave
 }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [checkResult, setCheckResult] = useState<DrlCheckResult | null>(null);
   const [selectedError, setSelectedError] = useState<DrlSyntaxError | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCode, setEditedCode] = useState(drlCode);
   const [stats, setStats] = useState({
     package: '',
     imports: 0,
@@ -42,6 +47,7 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
 
   useEffect(() => {
     if (drlCode) {
+      setEditedCode(drlCode);
       const lines = drlCode.split('\n');
       const packageMatch = drlCode.match(/package\s+([^;]+);/);
       const imports = (drlCode.match(/import\s+/g) || []).length;
@@ -60,27 +66,68 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
     }
   }, [drlCode]);
 
-  const linesWithErrors = useMemo((): LineWithError[] => {
-    if (!drlCode) return [];
+  useEffect(() => {
+    if (isEditing && editedCode) {
+      const lines = editedCode.split('\n');
+      const packageMatch = editedCode.match(/package\s+([^;]+);/);
+      const imports = (editedCode.match(/import\s+/g) || []).length;
+      const rules = (editedCode.match(/rule\s+/g) || []).length;
 
-    const lines = drlCode.split('\n');
+      setStats({
+        package: packageMatch ? packageMatch[1] : '',
+        imports,
+        rules,
+        lines: lines.length,
+        characters: editedCode.length
+      });
+
+      const result = checkDrlSyntax(editedCode);
+      setCheckResult(result);
+    }
+  }, [editedCode, isEditing]);
+
+  const linesWithErrors = useMemo((): LineWithError[] => {
+    const codeToParse = isEditing ? editedCode : drlCode;
+    if (!codeToParse) return [];
+
+    const lines = codeToParse.split('\n');
     return lines.map((content, index) => {
       const lineNumber = index + 1;
       const errors = checkResult?.errors.filter(e => e.line === lineNumber) || [];
       const warnings = checkResult?.warnings.filter(w => w.line === lineNumber) || [];
       return { lineNumber, content, errors, warnings };
     });
-  }, [drlCode, checkResult]);
+  }, [drlCode, editedCode, isEditing, checkResult]);
 
   const handleCopy = async () => {
+    const codeToCopy = isEditing ? editedCode : drlCode;
     try {
-      await navigator.clipboard.writeText(drlCode);
+      await navigator.clipboard.writeText(codeToCopy);
       setCopied(true);
       message.success(t('preview.copySuccess'));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       message.error(t('preview.copyFailed'));
     }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedCode(drlCode);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedCode(drlCode);
+    setSelectedError(null);
+  };
+
+  const handleSave = () => {
+    if (onSave && editedCode !== drlCode) {
+      onSave(editedCode);
+      message.success(t('preview.saveSuccess'));
+    }
+    setIsEditing(false);
   };
 
   const highlightDRL = (code: string) => {
@@ -169,13 +216,89 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
     ].sort((a, b) => a.line - b.line || a.column - b.column);
   }, [checkResult]);
 
+  const renderCodePreview = () => {
+    if (isEditing) {
+      return (
+        <TextArea
+          value={editedCode}
+          onChange={(e) => setEditedCode(e.target.value)}
+          style={{
+            minHeight: 500,
+            fontFamily: 'Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace',
+            fontSize: 12,
+            lineHeight: '20px',
+            backgroundColor: '#f6f8fa',
+            border: 'none',
+            resize: 'none',
+            padding: 0,
+            paddingLeft: 40
+          }}
+        />
+      );
+    }
+
+    return (
+      <div
+        style={{
+          backgroundColor: '#f6f8fa',
+          borderRadius: 6,
+          overflow: 'auto',
+          maxHeight: 500,
+          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace',
+          fontSize: 12,
+          lineHeight: '20px'
+        }}
+      >
+        {linesWithErrors.map((line) => (
+          <div
+            key={line.lineNumber}
+            id={`drl-line-${line.lineNumber}`}
+            style={getLineStyle(line)}
+            onClick={() => {
+              if (line.errors.length > 0) setSelectedError(line.errors[0]);
+              else if (line.warnings.length > 0) setSelectedError(line.warnings[0]);
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                width: 40,
+                textAlign: 'right',
+                paddingRight: 12,
+                color: '#6a737d',
+                userSelect: 'none',
+                borderRight: '1px solid #e1e4e8',
+                marginRight: 12,
+                backgroundColor: line.errors.length > 0 ? '#ffccc7' : line.warnings.length > 0 ? '#ffe7ba' : 'transparent'
+              }}
+            >
+              {line.lineNumber}
+            </span>
+            <span style={{ width: 20, textAlign: 'center', marginRight: 8 }}>
+              {getErrorIcon(line)}
+            </span>
+            <span
+              style={{ flex: 1, whiteSpace: 'pre' }}
+              dangerouslySetInnerHTML={{
+                __html: highlightDRL(line.content) || ' '
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <Modal
       title={
         <Space>
           <FileTextOutlined />
           <span>{t('preview.title')}</span>
-          {checkResult && (
+          {isEditing && (
+            <Tag color="blue">{t('preview.editing')}</Tag>
+          )}
+          {checkResult && !isEditing && (
             <Space size="small">
               {checkResult.errors.length > 0 && (
                 <Badge count={checkResult.errors.length} style={{ backgroundColor: '#ff4d4f' }}>
@@ -202,13 +325,41 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
       footer={
         <Space>
           <Button onClick={onClose}>{t('common.close')}</Button>
-          <Button
-            type="primary"
-            icon={copied ? <CheckOutlined /> : <CopyOutlined />}
-            onClick={handleCopy}
-          >
-            {copied ? t('preview.copied') : t('preview.copyCode')}
-          </Button>
+          {isEditing ? (
+            <>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={handleCancelEdit}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSave}
+              >
+                {t('common.save')}
+              </Button>
+            </>
+          ) : (
+            <>
+              {onSave && (
+                <Button
+                  icon={<EditOutlined />}
+                  onClick={handleEdit}
+                >
+                  {t('common.edit')}
+                </Button>
+              )}
+              <Button
+                type="primary"
+                icon={copied ? <CheckOutlined /> : <CopyOutlined />}
+                onClick={handleCopy}
+              >
+                {copied ? t('preview.copied') : t('preview.copyCode')}
+              </Button>
+            </>
+          )}
         </Space>
       }
     >
@@ -265,7 +416,14 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
         <Col span={16}>
           <Card
             size="small"
-            title={t('preview.codePreview')}
+            title={
+              <Space>
+                {t('preview.codePreview')}
+                {isEditing && editedCode !== drlCode && (
+                  <Tag color="orange">{t('preview.modified')}</Tag>
+                )}
+              </Space>
+            }
             extra={
               <Space size="small">
                 <Text type="secondary">{t('preview.nodes')}: {nodesCount}</Text>
@@ -274,54 +432,7 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
             }
             bodyStyle={{ padding: 0 }}
           >
-            <div
-              style={{
-                backgroundColor: '#f6f8fa',
-                borderRadius: 6,
-                overflow: 'auto',
-                maxHeight: 500,
-                fontFamily: 'Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace',
-                fontSize: 12,
-                lineHeight: '20px'
-              }}
-            >
-              {linesWithErrors.map((line) => (
-                <div
-                  key={line.lineNumber}
-                  id={`drl-line-${line.lineNumber}`}
-                  style={getLineStyle(line)}
-                  onClick={() => {
-                    if (line.errors.length > 0) setSelectedError(line.errors[0]);
-                    else if (line.warnings.length > 0) setSelectedError(line.warnings[0]);
-                  }}
-                >
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      width: 40,
-                      textAlign: 'right',
-                      paddingRight: 12,
-                      color: '#6a737d',
-                      userSelect: 'none',
-                      borderRight: '1px solid #e1e4e8',
-                      marginRight: 12,
-                      backgroundColor: line.errors.length > 0 ? '#ffccc7' : line.warnings.length > 0 ? '#ffe7ba' : 'transparent'
-                    }}
-                  >
-                    {line.lineNumber}
-                  </span>
-                  <span style={{ width: 20, textAlign: 'center', marginRight: 8 }}>
-                    {getErrorIcon(line)}
-                  </span>
-                  <span
-                    style={{ flex: 1, whiteSpace: 'pre' }}
-                    dangerouslySetInnerHTML={{
-                      __html: highlightDRL(line.content) || ' '
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
+            {renderCodePreview()}
           </Card>
         </Col>
 
@@ -420,7 +531,7 @@ export const DroolsPreview: React.FC<DroolsPreviewProps> = ({
       <div style={{ marginTop: 16 }}>
         <Paragraph type="secondary" style={{ fontSize: 12, marginBottom: 0 }}>
           <Text strong>{t('common.tip')}：</Text>
-          {t('preview.tip')}
+          {isEditing ? t('preview.editTip') : t('preview.tip')}
         </Paragraph>
       </div>
     </Modal>

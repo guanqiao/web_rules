@@ -404,6 +404,28 @@ export class DrlSyntaxChecker {
     });
   }
 
+  private isLineInThenSection(lineIndex: number): boolean {
+    let inThenSection = false;
+    let inWhenSection = false;
+
+    for (let i = 0; i <= lineIndex; i++) {
+      const line = this.lines[i].trim().toLowerCase();
+      
+      if (line === 'when' || line.startsWith('when ')) {
+        inWhenSection = true;
+        inThenSection = false;
+      } else if (line === 'then' || line.startsWith('then ')) {
+        inWhenSection = false;
+        inThenSection = true;
+      } else if (line === 'end' || line.startsWith('end ')) {
+        inWhenSection = false;
+        inThenSection = false;
+      }
+    }
+
+    return inThenSection;
+  }
+
   private checkCommonMistakes() {
     this.lines.forEach((line, lineIndex) => {
       const lineNum = lineIndex + 1;
@@ -443,13 +465,16 @@ export class DrlSyntaxChecker {
 
       const doubleEqualsMatch = trimmedLine.match(/([^=!<>])=([^=])/);
       if (doubleEqualsMatch && !trimmedLine.includes('==')) {
-        this.addError(
-          lineNum,
-          trimmedLine.indexOf('=') + 1,
-          'SINGLE_EQUALS',
-          '使用了单等号 = 进行比较',
-          '在 DRL 条件中应该使用双等号 == 进行比较'
-        );
+        const isInThenSection = this.isLineInThenSection(lineIndex);
+        if (!isInThenSection) {
+          this.addError(
+            lineNum,
+            trimmedLine.indexOf('=') + 1,
+            'SINGLE_EQUALS',
+            '使用了单等号 = 进行比较',
+            '在 DRL 条件中应该使用双等号 == 进行比较'
+          );
+        }
       }
     });
   }

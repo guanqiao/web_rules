@@ -28,11 +28,13 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
 
   const handleValuesChange = (_changedValues: any, allValues: any) => {
     if (selectedNode) {
-      const errors = validateConfig(selectedNode.type, allValues);
+      const { label, ...config } = allValues;
+      const errors = validateConfig(selectedNode.type, config);
       setValidationErrors(errors);
       onUpdateNode(selectedNode.id, {
         ...selectedNode.data,
-        config: allValues
+        label,
+        config
       });
     }
   };
@@ -117,7 +119,11 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
   useEffect(() => {
     if (selectedNode) {
       const config = selectedNode.data?.config || {};
-      form.setFieldsValue(config);
+      const formValues = {
+        label: selectedNode.data?.label,
+        ...config
+      };
+      form.setFieldsValue(formValues);
       const errors = validateConfig(selectedNode.type, config);
       setValidationErrors(errors);
     }
@@ -211,7 +217,7 @@ export const PropertyPanel: React.FC<PropertyPanelProps> = ({
         <Form
           form={form}
           layout="vertical"
-          initialValues={config}
+          initialValues={{ label: selectedNode.data?.label, ...config }}
           onValuesChange={handleValuesChange}
           size="small"
           validateTrigger="onChange"

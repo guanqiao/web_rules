@@ -61,7 +61,7 @@ export const ActionNode: React.FC<NodeProps> = ({ data, selected }) => {
           transition: 'all 0.3s ease',
           borderRadius: 12
         }}
-        bodyStyle={{ padding: '14px' }}
+        styles={{ body: { padding: '14px' } }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ThunderboltOutlined 

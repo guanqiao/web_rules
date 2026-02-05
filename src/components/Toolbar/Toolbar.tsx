@@ -17,13 +17,17 @@ import {
   KeyOutlined,
   QuestionCircleOutlined,
   ApiOutlined,
-  PlayCircleOutlined
+  PlayCircleOutlined,
+  DatabaseOutlined
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector/LanguageSelector';
 import { TemplateLibrary } from '@/components/TemplateLibrary/TemplateLibrary';
 import { ShortcutsModal } from '@/components/ShortcutsModal/ShortcutsModal';
 import { HelpModal } from '@/components/HelpModal/HelpModal';
+import { DataModelManager } from '@/components/DataModelManager/DataModelManager';
+import { useEditorStore } from '@/stores/useEditorStore';
+import { DataModel } from '@/types/rule.types';
 
 export interface ToolbarProps {
   onPreview: () => void;
@@ -45,6 +49,7 @@ export interface ToolbarProps {
   onApplyTemplate?: (template: any) => void;
   onOpenVariables?: () => void;
   onOpenTest?: () => void;
+  onOpenDataModels?: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -66,12 +71,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   lastSavedTime,
   onApplyTemplate,
   onOpenVariables,
-  onOpenTest
+  onOpenTest,
+  onOpenDataModels
 }) => {
   const { t } = useTranslation();
   const [templateLibraryVisible, setTemplateLibraryVisible] = React.useState(false);
   const [shortcutsVisible, setShortcutsVisible] = React.useState(false);
   const [helpVisible, setHelpVisible] = React.useState(false);
+  const [dataModelsVisible, setDataModelsVisible] = React.useState(false);
+  
+  // 从全局状态获取数据模型
+  const dataModels = useEditorStore(state => state.dataModels);
+  const setDataModels = useEditorStore(state => state.setDataModels);
 
   const handleClear = () => {
     Modal.confirm({
@@ -168,6 +179,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               onClick={onOpenVariables}
             >
               {t('toolbar.variables')}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t('toolbar.dataModelsTooltip')}>
+            <Button 
+              icon={<DatabaseOutlined />} 
+              onClick={() => setDataModelsVisible(true)}
+            >
+              {t('toolbar.dataModels')}
             </Button>
           </Tooltip>
 
@@ -296,6 +316,15 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       <HelpModal
         visible={helpVisible}
         onClose={() => setHelpVisible(false)}
+      />
+
+      <DataModelManager
+        visible={dataModelsVisible}
+        onClose={() => setDataModelsVisible(false)}
+        dataModels={dataModels}
+        onSave={(models: DataModel[]) => {
+          setDataModels(models);
+        }}
       />
     </>
   );

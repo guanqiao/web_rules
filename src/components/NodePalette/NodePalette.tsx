@@ -128,7 +128,7 @@ export const NodePalette: React.FC<{ onDragStart: (event: React.DragEvent, nodeT
         marginBottom: 8,
         borderRadius: 8
       }}
-      bodyStyle={{ padding: '10px' }}
+      styles={{ body: { padding: '10px' } }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.02)';
         e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';

@@ -48,7 +48,7 @@ export const EndNode: React.FC<NodeProps> = ({ data, selected }) => {
           cursor: 'grab',
           transition: 'all 0.3s ease'
         }}
-        bodyStyle={{ padding: '12px', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
+        styles={{ body: { padding: '12px', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } }}
       >
         <div style={{ position: 'absolute', top: 8, right: 8 }}>
           {getStatusBadge()}

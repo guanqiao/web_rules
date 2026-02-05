@@ -63,6 +63,29 @@ export interface DroolsRuleItem {
   then: string[];
 }
 
+export interface DataModelField {
+  id: string;
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'date' | 'enum' | 'object' | 'array';
+  required: boolean;
+  defaultValue?: any;
+  description?: string;
+  enumValues?: string[];
+  itemsType?: string;
+  objectType?: string;
+}
+
+export interface DataModel {
+  id: string;
+  name: string;
+  packageName: string;
+  fields: DataModelField[];
+  description?: string;
+  version: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface RuleFlowData {
   nodes: RuleNode[];
   connections: Connection[];
@@ -73,4 +96,5 @@ export interface RuleFlowData {
     createdAt: string;
     updatedAt: string;
   };
+  dataModels?: DataModel[];
 }

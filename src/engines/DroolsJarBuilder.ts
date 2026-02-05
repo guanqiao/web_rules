@@ -1,12 +1,14 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { DroolsRule } from '@/types/rule.types';
+import { DroolsRule, DataModel } from '@/types/rule.types';
+import { JavaModelCompiler } from './JavaModelCompiler';
 
 export interface JarBuildConfig {
   version?: string;
   vendor?: string;
   description?: string;
   includeKModule?: boolean;
+  dataModels?: DataModel[];
 }
 
 export class DroolsJarBuilder {
@@ -19,7 +21,8 @@ export class DroolsJarBuilder {
       version: config.version || '1.0.0',
       vendor: config.vendor || 'Web Rules',
       description: config.description || 'Generated Drools Rules',
-      includeKModule: config.includeKModule !== false
+      includeKModule: config.includeKModule !== false,
+      dataModels: config.dataModels || []
     };
   }
 
@@ -33,9 +36,19 @@ export class DroolsJarBuilder {
       this.addKModuleXml(zip);
     }
 
+    this.addDataModelClasses(zip);
     this.addPomXml(zip);
 
     return await zip.generateAsync({ type: 'blob' });
+  }
+
+  private addDataModelClasses(zip: JSZip): void {
+    if (this.config.dataModels && this.config.dataModels.length > 0) {
+      const compiledModels = JavaModelCompiler.compileAll(this.config.dataModels);
+      compiledModels.forEach((javaCode, filePath) => {
+        zip.file(filePath, javaCode);
+      });
+    }
   }
 
   private addManifest(zip: JSZip): void {
@@ -85,8 +98,8 @@ Build-Time: ${new Date().toISOString()}
     <description>${this.config.description}</description>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <drools.version>8.44.0.Final</drools.version>
     </properties>
@@ -121,8 +134,8 @@ Build-Time: ${new Date().toISOString()}
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
         </plugins>
